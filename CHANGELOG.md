@@ -1,5 +1,16 @@
 # Registro delle modifiche
 
+## 1.1.0
+- Apertura del pannello, 7 nuove: slide dal basso (bottom sheet, angoli arrotondati), rotazione 3D di lato,
+  riquadro dall'angolo (staccato dai bordi), zoom a schermo intero, cerchio che si allarga dall'icona hamburger,
+  tenda dall'alto, tenda da sinistra. Nuovi controlli: altezza massima, distanza dai bordi del riquadro, raggio del bordo
+  del pannello; "Lato del pannello" vale anche per rotazione 3D e riquadro.
+- Hamburger, 6 nuove: X a vortice, X elastica, + che ruota in X, X dal basso, linee asimmetriche → X
+  (si allungano anche in hover), freccia a destra.
+- Ingresso delle voci, 7 nuovi: dall'alto, sfocatura, rimbalzo, rotazione 3D, rotazione, inclinazione,
+  rivelazione dal basso.
+- Icona hamburger personalizzata, 3 nuovi passaggi tra le icone: zoom, rotazione 3D, scorrimento verticale.
+
 ## 1.0.2
 - Sottomenu a slide (Contenuto → Menu → Apertura dei sottomenu): ogni sottomenu entra da destra al posto del livello
   precedente, con pulsante Indietro (testo e icona personalizzabili) e titolo della voce genitore; su più livelli,

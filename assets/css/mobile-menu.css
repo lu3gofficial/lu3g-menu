@@ -85,29 +85,96 @@
 .lu3g-mm__bars > span:nth-child(2) { top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2); }
 .lu3g-mm__bars > span:nth-child(3) { top: calc(100% - var(--lu3g-mm-bar-h, 2px)); }
 
-/* X (anche a due tempi e con rotazione) */
+/* X (anche a due tempi, con rotazione, a vortice e partendo dalle linee asimmetriche) */
 .lu3g-mm.is-open .lu3g-mm__toggle--x .lu3g-mm__bars > span:nth-child(1),
 .lu3g-mm.is-open .lu3g-mm__toggle--squeeze .lu3g-mm__bars > span:nth-child(1),
-.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars > span:nth-child(1) {
+.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars > span:nth-child(1),
+.lu3g-mm.is-open .lu3g-mm__toggle--vortex .lu3g-mm__bars > span:nth-child(1),
+.lu3g-mm.is-open .lu3g-mm__toggle--asym .lu3g-mm__bars > span:nth-child(1) {
 	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
 	transform: rotate(45deg);
 }
 
 .lu3g-mm.is-open .lu3g-mm__toggle--x .lu3g-mm__bars > span:nth-child(3),
 .lu3g-mm.is-open .lu3g-mm__toggle--squeeze .lu3g-mm__bars > span:nth-child(3),
-.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars > span:nth-child(3) {
+.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars > span:nth-child(3),
+.lu3g-mm.is-open .lu3g-mm__toggle--vortex .lu3g-mm__bars > span:nth-child(3),
+.lu3g-mm.is-open .lu3g-mm__toggle--asym .lu3g-mm__bars > span:nth-child(3) {
 	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
 	transform: rotate(-45deg);
 }
 
 .lu3g-mm.is-open .lu3g-mm__toggle--x .lu3g-mm__bars > span:nth-child(2),
 .lu3g-mm.is-open .lu3g-mm__toggle--squeeze .lu3g-mm__bars > span:nth-child(2),
-.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars > span:nth-child(2) {
+.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars > span:nth-child(2),
+.lu3g-mm.is-open .lu3g-mm__toggle--vortex .lu3g-mm__bars > span:nth-child(2),
+.lu3g-mm.is-open .lu3g-mm__toggle--asym .lu3g-mm__bars > span:nth-child(2),
+.lu3g-mm.is-open .lu3g-mm__toggle--elastic .lu3g-mm__bars > span:nth-child(2) {
 	opacity: 0;
 }
 
 .lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars {
 	transform: rotate(180deg);
+}
+
+/* vortice: un giro e mezzo all'indietro mentre si forma la X */
+.lu3g-mm.is-open .lu3g-mm__toggle--vortex .lu3g-mm__bars {
+	transform: rotate(-540deg);
+}
+
+/* elastica: le linee ruotano oltre la X (135°) con un rimbalzo finale */
+.lu3g-mm.is-open .lu3g-mm__toggle--elastic .lu3g-mm__bars > span:nth-child(1) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	transform: rotate(135deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--elastic .lu3g-mm__bars > span:nth-child(3) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	transform: rotate(-135deg);
+}
+
+/* + che ruota in X: la linea alta diventa verticale, quella bassa si sovrappone alla centrale, tutto gira di 45° */
+.lu3g-mm.is-open .lu3g-mm__toggle--plus .lu3g-mm__bars {
+	transform: rotate(45deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--plus .lu3g-mm__bars > span:nth-child(1) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	transform: rotate(90deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--plus .lu3g-mm__bars > span:nth-child(3) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	opacity: 0;
+}
+
+/* X dal basso: la linea alta cade e sparisce, centrale e bassa si incrociano */
+.lu3g-mm.is-open .lu3g-mm__toggle--collapse .lu3g-mm__bars > span:nth-child(1) {
+	top: calc(100% - var(--lu3g-mm-bar-h, 2px));
+	opacity: 0;
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--collapse .lu3g-mm__bars > span:nth-child(2) {
+	transform: rotate(45deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--collapse .lu3g-mm__bars > span:nth-child(3) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	transform: rotate(-45deg);
+}
+
+/* linee asimmetriche: da chiuso si accorciano verso il basso, in hover e da aperto tornano piene */
+.lu3g-mm__toggle--asym .lu3g-mm__bars > span:nth-child(2) {
+	width: 72%;
+}
+
+.lu3g-mm__toggle--asym .lu3g-mm__bars > span:nth-child(3) {
+	width: 44%;
+}
+
+.lu3g-mm__toggle--asym:hover .lu3g-mm__bars > span,
+.lu3g-mm.is-open .lu3g-mm__toggle--asym .lu3g-mm__bars > span {
+	width: 100%;
 }
 
 /* Freccia verso sinistra: le linee esterne ruotano attorno all'estremo sinistro */
@@ -126,6 +193,26 @@
 	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
 	width: 55%;
 	transform: rotate(42deg);
+}
+
+/* Freccia verso destra: specchio della precedente, le linee ruotano attorno all'estremo destro */
+.lu3g-mm__toggle--arrow-right .lu3g-mm__bars > span:nth-child(1),
+.lu3g-mm__toggle--arrow-right .lu3g-mm__bars > span:nth-child(3) {
+	transform-origin: calc(100% - var(--lu3g-mm-bar-h, 2px) / 2) center;
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--arrow-right .lu3g-mm__bars > span:nth-child(1) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	left: 45%;
+	width: 55%;
+	transform: rotate(42deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--arrow-right .lu3g-mm__bars > span:nth-child(3) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	left: 45%;
+	width: 55%;
+	transform: rotate(-42deg);
 }
 
 /* Linea unica */
@@ -182,6 +269,51 @@
 }
 
 .lu3g-mm.is-open .lu3g-mm__icon--rotate .lu3g-mm__icon-open {
+	transform: none;
+}
+
+.lu3g-mm__icon--zoom .lu3g-mm__icon-open,
+.lu3g-mm.is-open .lu3g-mm__icon--zoom .lu3g-mm__icon-closed {
+	transform: scale(0);
+}
+
+.lu3g-mm__icon--flip .lu3g-mm__icon-open {
+	transform: rotateY(90deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__icon--flip .lu3g-mm__icon-closed {
+	transform: rotateY(-90deg);
+}
+
+/* scorrimento verticale: l'icona chiusa esce in alto, quella aperta entra dal basso */
+.lu3g-mm__icon--slide {
+	overflow: hidden;
+}
+
+.lu3g-mm__icon--slide .lu3g-mm__icon-open {
+	transform: translateY(100%);
+}
+
+.lu3g-mm.is-open .lu3g-mm__icon--slide .lu3g-mm__icon-closed {
+	transform: translateY(-100%);
+}
+
+.lu3g-mm.is-open .lu3g-mm__icon--zoom .lu3g-mm__icon-open,
+.lu3g-mm.is-open .lu3g-mm__icon--flip .lu3g-mm__icon-open,
+.lu3g-mm.is-open .lu3g-mm__icon--slide .lu3g-mm__icon-open {
+	transform: none;
+}
+
+/* una sola icona (nessuna icona "aperto"): l'effetto si limita a un cambio leggero */
+.lu3g-mm.is-open .lu3g-mm__icon--zoom.lu3g-mm__icon--single .lu3g-mm__icon-closed {
+	transform: scale(.8);
+}
+
+.lu3g-mm.is-open .lu3g-mm__icon--flip.lu3g-mm__icon--single .lu3g-mm__icon-closed {
+	transform: rotateY(180deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__icon--slide.lu3g-mm__icon--single .lu3g-mm__icon-closed {
 	transform: none;
 }
 
@@ -287,22 +419,110 @@
 	right: 0;
 }
 
-.lu3g-mm__layer[data-animation="fullscreen"] .lu3g-mm__panel {
+/* bottom sheet: dal basso, angoli superiori arrotondati */
+.lu3g-mm__layer[data-animation="slide-bottom"] .lu3g-mm__panel {
+	top: auto;
+	right: 0;
+	bottom: 0;
+	width: 100%;
+	max-width: none;
+	max-height: 85%;
+	border-radius: 18px 18px 0 0;
+	transform: translateY(100%);
+}
+
+/* rotazione 3D: il pannello si apre come un'anta, incernierato sul bordo dello schermo */
+.lu3g-mm__layer[data-animation="flip"] .lu3g-mm__panel {
+	opacity: 0;
+	transform: perspective(1200px) rotateY(-75deg);
+	transform-origin: left center;
+}
+
+.lu3g-mm__layer[data-animation="flip"][data-side="right"] .lu3g-mm__panel {
+	left: auto;
+	right: 0;
+	transform: perspective(1200px) rotateY(75deg);
+	transform-origin: right center;
+}
+
+/* riquadro staccato dai bordi che cresce dall'angolo in alto */
+.lu3g-mm__layer[data-animation="card"] .lu3g-mm__panel {
+	top: var(--lu3g-mm-card-gap, 12px);
+	bottom: auto;
+	left: var(--lu3g-mm-card-gap, 12px);
+	width: 340px;
+	max-width: calc(100% - 2 * var(--lu3g-mm-card-gap, 12px));
+	max-height: calc(100% - 2 * var(--lu3g-mm-card-gap, 12px));
+	border-radius: 18px;
+	box-shadow: 0 24px 60px rgba(0, 0, 0, .25);
+	opacity: 0;
+	transform: translateY(-10px) scale(.9);
+	transform-origin: top left;
+}
+
+.lu3g-mm__layer[data-animation="card"][data-side="right"] .lu3g-mm__panel {
+	left: auto;
+	right: var(--lu3g-mm-card-gap, 12px);
+	transform-origin: top right;
+}
+
+/* aperture a schermo intero */
+.lu3g-mm__layer[data-animation="fullscreen"] .lu3g-mm__panel,
+.lu3g-mm__layer[data-animation="zoom"] .lu3g-mm__panel,
+.lu3g-mm__layer[data-animation="circle"] .lu3g-mm__panel,
+.lu3g-mm__layer[data-animation="curtain"] .lu3g-mm__panel,
+.lu3g-mm__layer[data-animation="blinds"] .lu3g-mm__panel {
 	right: 0;
 	width: 100%;
 	max-width: none;
+}
+
+.lu3g-mm__layer[data-animation="fullscreen"] .lu3g-mm__panel {
 	opacity: 0;
 	transform: scale(1.04);
 }
 
-.lu3g-mm__layer.is-open .lu3g-mm__panel {
+.lu3g-mm__layer[data-animation="zoom"] .lu3g-mm__panel {
+	opacity: 0;
+	transform: scale(.8);
+}
+
+/* cerchio che si allarga dal centro dell'hamburger (--lu3g-mm-ox / --lu3g-mm-oy calcolati dal JS) */
+.lu3g-mm__layer[data-animation="circle"] .lu3g-mm__panel {
+	clip-path: circle(0px at var(--lu3g-mm-ox, calc(100% - 40px)) var(--lu3g-mm-oy, 40px));
+}
+
+.lu3g-mm__layer.is-open[data-animation="circle"] .lu3g-mm__panel {
+	clip-path: circle(150vmax at var(--lu3g-mm-ox, calc(100% - 40px)) var(--lu3g-mm-oy, 40px));
+}
+
+/* tende: il pannello si scopre dall'alto o da sinistra senza muovere il contenuto */
+.lu3g-mm__layer[data-animation="curtain"] .lu3g-mm__panel {
+	clip-path: inset(0 0 100% 0);
+}
+
+.lu3g-mm__layer[data-animation="blinds"] .lu3g-mm__panel {
+	clip-path: inset(0 100% 0 0);
+}
+
+.lu3g-mm__layer.is-open[data-animation="curtain"] .lu3g-mm__panel,
+.lu3g-mm__layer.is-open[data-animation="blinds"] .lu3g-mm__panel {
+	clip-path: inset(0 0 0 0);
+}
+
+/* aperto: tutte le varianti arrivano qui (specificità alta per battere le regole con data-side) */
+.lu3g-mm__layer.is-open[data-animation][data-side] .lu3g-mm__panel {
 	opacity: 1;
 	transform: none;
 }
 
-/* posizione verticale del contenuto: in alto, salvo l'overlay a schermo intero che parte centrato.
+/* posizione verticale del contenuto: in alto, salvo le aperture a schermo intero che partono centrate.
    Il controllo "Posizione verticale" di Elementor cambia questi margini (resta scorrevole se è più alto dello schermo) */
-.lu3g-mm__layer[data-animation="fullscreen"] .lu3g-mm__body {
+.lu3g-mm__layer[data-animation="fullscreen"] .lu3g-mm__body,
+.lu3g-mm__layer[data-animation="zoom"] .lu3g-mm__body,
+.lu3g-mm__layer[data-animation="circle"] .lu3g-mm__body,
+.lu3g-mm__layer[data-animation="curtain"] .lu3g-mm__body,
+.lu3g-mm__layer[data-animation="blinds"] .lu3g-mm__body {
 	margin-top: auto;
 	margin-bottom: auto;
 }
@@ -860,9 +1080,18 @@ html.lu3g-mm-locked body {
 	.lu3g-mm__bars > span {
 		transition:
 			top var(--lu3g-mm-d) var(--lu3g-mm-e),
+			left var(--lu3g-mm-d) var(--lu3g-mm-e),
 			width var(--lu3g-mm-d) var(--lu3g-mm-e),
 			transform var(--lu3g-mm-d) var(--lu3g-mm-e),
 			opacity var(--lu3g-mm-d) var(--lu3g-mm-e);
+	}
+
+	/* elastica: easing con rimbalzo fisso sulla rotazione, qualunque easing sia scelto */
+	.lu3g-mm__toggle--elastic .lu3g-mm__bars > span {
+		transition:
+			top calc(var(--lu3g-mm-d) * .5) var(--lu3g-mm-e),
+			transform var(--lu3g-mm-d) cubic-bezier(.68, -.55, .27, 1.55),
+			opacity calc(var(--lu3g-mm-d) * .5) var(--lu3g-mm-e);
 	}
 
 	/* a due tempi: in apertura prima si avvicinano poi ruotano, in chiusura l'inverso */
@@ -890,7 +1119,10 @@ html.lu3g-mm-locked body {
 
 	/* pannello e overlay */
 	.lu3g-mm__panel {
-		transition: transform var(--lu3g-mm-d) var(--lu3g-mm-e), opacity var(--lu3g-mm-d) var(--lu3g-mm-e);
+		transition:
+			transform var(--lu3g-mm-d) var(--lu3g-mm-e),
+			opacity var(--lu3g-mm-d) var(--lu3g-mm-e),
+			clip-path var(--lu3g-mm-d) var(--lu3g-mm-e);
 	}
 
 	.lu3g-mm__overlay {
@@ -945,19 +1177,26 @@ html.lu3g-mm-locked body {
 		opacity: 0;
 		transition:
 			opacity calc(var(--lu3g-mm-d) * .8) var(--lu3g-mm-e),
-			transform calc(var(--lu3g-mm-d) * .8) var(--lu3g-mm-e);
+			transform calc(var(--lu3g-mm-d) * .8) var(--lu3g-mm-e),
+			filter calc(var(--lu3g-mm-d) * .8) var(--lu3g-mm-e),
+			clip-path calc(var(--lu3g-mm-d) * .8) var(--lu3g-mm-e);
 	}
 
 	.lu3g-mm__layer[data-items="slide-up"] .lu3g-mm__anim {
 		transform: translateY(18px);
 	}
 
+	.lu3g-mm__layer[data-items="slide-down"] .lu3g-mm__anim {
+		transform: translateY(-18px);
+	}
+
 	.lu3g-mm__layer[data-items="slide-side"] .lu3g-mm__anim {
 		transform: translateX(-28px);
 	}
 
+	/* pannelli che arrivano da destra: le voci arrivano da destra anche loro */
 	.lu3g-mm__layer[data-items="slide-side"][data-animation="slide-right"] .lu3g-mm__anim,
-	.lu3g-mm__layer[data-items="slide-side"][data-side="right"][data-animation="fade"] .lu3g-mm__anim {
+	.lu3g-mm__layer[data-items="slide-side"][data-side="right"]:is([data-animation="fade"], [data-animation="flip"], [data-animation="card"]) .lu3g-mm__anim {
 		transform: translateX(28px);
 	}
 
@@ -965,10 +1204,53 @@ html.lu3g-mm-locked body {
 		transform: scale(.9);
 	}
 
+	.lu3g-mm__layer[data-items="blur"] .lu3g-mm__anim {
+		filter: blur(8px);
+		transform: scale(1.04);
+	}
+
+	.lu3g-mm__layer[data-items="bounce"] .lu3g-mm__anim {
+		transform: translateY(30px);
+		transition:
+			opacity calc(var(--lu3g-mm-d) * .6) var(--lu3g-mm-e),
+			transform var(--lu3g-mm-d) cubic-bezier(.34, 1.56, .64, 1);
+	}
+
+	.lu3g-mm__layer[data-items="flip"] .lu3g-mm__anim {
+		transform: perspective(600px) rotateX(-70deg);
+		transform-origin: 50% 0;
+	}
+
+	.lu3g-mm__layer[data-items="rotate"] .lu3g-mm__anim {
+		transform: translateY(16px) rotate(-7deg);
+		transform-origin: 0 100%;
+	}
+
+	.lu3g-mm__layer[data-items="skew"] .lu3g-mm__anim {
+		transform: translateY(20px) skewY(6deg);
+	}
+
+	/* rivelazione: la voce emerge da una linea invisibile in basso */
+	.lu3g-mm__layer[data-items="mask"] .lu3g-mm__anim {
+		clip-path: inset(0 0 100% 0);
+		transform: translateY(14px);
+	}
+
 	.lu3g-mm__layer[data-items].is-open .lu3g-mm__anim {
 		opacity: 1;
 		transform: none;
+		filter: none;
 		transition-delay: calc(var(--lu3g-mm-d) * .35 + var(--i, 0) * var(--lu3g-mm-stagger, 50ms));
+	}
+
+	/* margine di qualche px: il contorno di focus resta visibile */
+	.lu3g-mm__layer[data-items="mask"].is-open .lu3g-mm__anim {
+		clip-path: inset(-6px -6px -6px -6px);
+	}
+
+	/* a slide i sottomenu escono dal riquadro della voce: niente ritaglio una volta iniziata la navigazione */
+	.lu3g-mm__layer[data-items="mask"].lu3g-mm__layer--nav .lu3g-mm__anim {
+		clip-path: none !important;
 	}
 
 	/* dopo il primo passaggio tra le schermate a slide le voci si muovono subito, senza il ritardo dell'ingresso */

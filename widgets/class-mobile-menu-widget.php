@@ -394,6 +394,9 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'options'   => array(
 				'rotate' => esc_html__( 'Rotazione', 'lu3g-mobile-menu' ),
 				'fade'   => esc_html__( 'Dissolvenza', 'lu3g-mobile-menu' ),
+				'zoom'   => esc_html__( 'Zoom', 'lu3g-mobile-menu' ),
+				'flip'   => esc_html__( 'Rotazione 3D', 'lu3g-mobile-menu' ),
+				'slide'  => esc_html__( 'Scorrimento verticale', 'lu3g-mobile-menu' ),
 				'none'   => esc_html__( 'Nessuno', 'lu3g-mobile-menu' ),
 			),
 			'condition' => array( 'toggle_icon_type' => 'icon' ),
@@ -404,12 +407,18 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'type'    => Controls_Manager::SELECT,
 			'default' => 'squeeze',
 			'options' => array(
-				'x'       => esc_html__( 'Hamburger → X', 'lu3g-mobile-menu' ),
-				'squeeze' => esc_html__( 'Hamburger → X (a due tempi)', 'lu3g-mobile-menu' ),
-				'spin'    => esc_html__( 'Hamburger → X con rotazione', 'lu3g-mobile-menu' ),
-				'arrow'   => esc_html__( 'Hamburger → freccia', 'lu3g-mobile-menu' ),
-				'minus'   => esc_html__( 'Hamburger → linea', 'lu3g-mobile-menu' ),
-				'none'    => esc_html__( 'Nessuna', 'lu3g-mobile-menu' ),
+				'x'           => esc_html__( 'Hamburger → X', 'lu3g-mobile-menu' ),
+				'squeeze'     => esc_html__( 'Hamburger → X (a due tempi)', 'lu3g-mobile-menu' ),
+				'spin'        => esc_html__( 'Hamburger → X con rotazione', 'lu3g-mobile-menu' ),
+				'vortex'      => esc_html__( 'Hamburger → X a vortice', 'lu3g-mobile-menu' ),
+				'elastic'     => esc_html__( 'Hamburger → X elastica', 'lu3g-mobile-menu' ),
+				'plus'        => esc_html__( 'Hamburger → + → X', 'lu3g-mobile-menu' ),
+				'collapse'    => esc_html__( 'Hamburger → X dal basso', 'lu3g-mobile-menu' ),
+				'asym'        => esc_html__( 'Linee asimmetriche → X', 'lu3g-mobile-menu' ),
+				'arrow'       => esc_html__( 'Hamburger → freccia a sinistra', 'lu3g-mobile-menu' ),
+				'arrow-right' => esc_html__( 'Hamburger → freccia a destra', 'lu3g-mobile-menu' ),
+				'minus'       => esc_html__( 'Hamburger → linea', 'lu3g-mobile-menu' ),
+				'none'        => esc_html__( 'Nessuna', 'lu3g-mobile-menu' ),
 			),
 			'condition' => array( 'toggle_icon_type' => 'bars' ),
 		) );
@@ -462,12 +471,20 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'type'    => Controls_Manager::SELECT,
 			'default' => 'slide-left',
 			'options' => array(
-				'slide-left'  => esc_html__( 'Slide da sinistra', 'lu3g-mobile-menu' ),
-				'slide-right' => esc_html__( 'Slide da destra', 'lu3g-mobile-menu' ),
-				'slide-top'   => esc_html__( 'Slide dall\'alto', 'lu3g-mobile-menu' ),
-				'fade'        => esc_html__( 'Dissolvenza', 'lu3g-mobile-menu' ),
-				'fullscreen'  => esc_html__( 'Overlay a schermo intero', 'lu3g-mobile-menu' ),
+				'slide-left'   => esc_html__( 'Slide da sinistra', 'lu3g-mobile-menu' ),
+				'slide-right'  => esc_html__( 'Slide da destra', 'lu3g-mobile-menu' ),
+				'slide-top'    => esc_html__( 'Slide dall\'alto', 'lu3g-mobile-menu' ),
+				'slide-bottom' => esc_html__( 'Slide dal basso (bottom sheet)', 'lu3g-mobile-menu' ),
+				'fade'         => esc_html__( 'Dissolvenza', 'lu3g-mobile-menu' ),
+				'flip'         => esc_html__( 'Rotazione 3D di lato', 'lu3g-mobile-menu' ),
+				'card'         => esc_html__( 'Riquadro dall\'angolo', 'lu3g-mobile-menu' ),
+				'fullscreen'   => esc_html__( 'Overlay a schermo intero', 'lu3g-mobile-menu' ),
+				'zoom'         => esc_html__( 'Zoom a schermo intero', 'lu3g-mobile-menu' ),
+				'circle'       => esc_html__( 'Cerchio dal pulsante', 'lu3g-mobile-menu' ),
+				'curtain'      => esc_html__( 'Tenda dall\'alto', 'lu3g-mobile-menu' ),
+				'blinds'       => esc_html__( 'Tenda da sinistra', 'lu3g-mobile-menu' ),
 			),
+			'description' => esc_html__( '"Cerchio dal pulsante" si apre a partire dall\'icona hamburger, ovunque si trovi.', 'lu3g-mobile-menu' ),
 		) );
 
 		$this->add_control( 'panel_side', array(
@@ -478,7 +495,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				'left'  => esc_html__( 'Sinistra', 'lu3g-mobile-menu' ),
 				'right' => esc_html__( 'Destra', 'lu3g-mobile-menu' ),
 			),
-			'condition' => array( 'panel_animation' => 'fade' ),
+			'condition' => array( 'panel_animation' => array( 'fade', 'flip', 'card' ) ),
 		) );
 
 		$this->add_control( 'show_close', array(
@@ -607,8 +624,15 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				'none'       => esc_html__( 'Nessuno', 'lu3g-mobile-menu' ),
 				'fade'       => esc_html__( 'Dissolvenza', 'lu3g-mobile-menu' ),
 				'slide-up'   => esc_html__( 'Dal basso', 'lu3g-mobile-menu' ),
+				'slide-down' => esc_html__( 'Dall\'alto', 'lu3g-mobile-menu' ),
 				'slide-side' => esc_html__( 'Di lato', 'lu3g-mobile-menu' ),
 				'zoom'       => esc_html__( 'Zoom', 'lu3g-mobile-menu' ),
+				'blur'       => esc_html__( 'Sfocatura', 'lu3g-mobile-menu' ),
+				'bounce'     => esc_html__( 'Rimbalzo', 'lu3g-mobile-menu' ),
+				'flip'       => esc_html__( 'Rotazione 3D', 'lu3g-mobile-menu' ),
+				'rotate'     => esc_html__( 'Rotazione', 'lu3g-mobile-menu' ),
+				'skew'       => esc_html__( 'Inclinazione', 'lu3g-mobile-menu' ),
+				'mask'       => esc_html__( 'Rivelazione dal basso', 'lu3g-mobile-menu' ),
 			),
 			'separator' => 'before',
 		) );
@@ -949,9 +973,43 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				'%'  => array( 'min' => 30, 'max' => 100 ),
 				'vw' => array( 'min' => 30, 'max' => 100 ),
 			),
-			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__panel' => 'width: {{SIZE}}{{UNIT}}; max-width: 100%;' ),
-			'condition'  => array( 'panel_animation' => array( 'slide-left', 'slide-right', 'fade' ) ),
+			'selectors'  => array(
+				'{{WRAPPER}} .lu3g-mm__panel' => 'width: {{SIZE}}{{UNIT}}; max-width: 100%;',
+				// il riquadro resta staccato dai bordi dello schermo
+				'{{WRAPPER}} .lu3g-mm__layer[data-animation="card"] .lu3g-mm__panel' => 'max-width: calc(100% - 2 * var(--lu3g-mm-card-gap, 12px));',
+			),
+			'condition'  => array( 'panel_animation' => array( 'slide-left', 'slide-right', 'fade', 'flip', 'card' ) ),
 			'separator'  => 'before',
+		) );
+
+		$this->add_responsive_control( 'panel_max_height', array(
+			'label'      => esc_html__( 'Altezza massima', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'vh', '%' ),
+			'range'      => array(
+				'px' => array( 'min' => 200, 'max' => 1200 ),
+				'vh' => array( 'min' => 20, 'max' => 100 ),
+				'%'  => array( 'min' => 20, 'max' => 100 ),
+			),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__panel' => 'max-height: {{SIZE}}{{UNIT}};' ),
+			'condition'  => array( 'panel_animation' => array( 'slide-top', 'slide-bottom', 'card' ) ),
+		) );
+
+		$this->add_control( 'card_gap', array(
+			'label'      => esc_html__( 'Distanza dai bordi', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__layer' => '--lu3g-mm-card-gap: {{SIZE}}{{UNIT}};' ),
+			'condition'  => array( 'panel_animation' => 'card' ),
+		) );
+
+		$this->add_responsive_control( 'panel_radius', array(
+			'label'       => esc_html__( 'Raggio del bordo', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::DIMENSIONS,
+			'size_units'  => array( 'px', '%' ),
+			'description' => esc_html__( 'Predefinito: arrotondato per il bottom sheet e il riquadro, squadrato per gli altri.', 'lu3g-mobile-menu' ),
+			'selectors'   => array( '{{WRAPPER}} .lu3g-mm__panel' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
 		) );
 
 		$this->add_responsive_control( 'panel_padding', array(
@@ -1566,11 +1624,11 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$edit              = $this->is_edit_mode();
 
 		$breakpoint = isset( $this->s['breakpoint'] ) ? absint( $this->s['breakpoint'] ) : 0;
-		$panel_anim = $this->pick( 'panel_animation', array( 'slide-left', 'slide-right', 'slide-top', 'fade', 'fullscreen' ), 'slide-left' );
-		$items_anim = $this->pick( 'items_animation', array( 'none', 'fade', 'slide-up', 'slide-side', 'zoom' ), 'slide-up' );
+		$panel_anim = $this->pick( 'panel_animation', array( 'slide-left', 'slide-right', 'slide-top', 'slide-bottom', 'fade', 'flip', 'card', 'fullscreen', 'zoom', 'circle', 'curtain', 'blinds' ), 'slide-left' );
+		$items_anim = $this->pick( 'items_animation', array( 'none', 'fade', 'slide-up', 'slide-down', 'slide-side', 'zoom', 'blur', 'bounce', 'flip', 'rotate', 'skew', 'mask' ), 'slide-up' );
 		$toggle_fx  = 'icon' === $this->pick( 'toggle_icon_type', array( 'bars', 'icon' ), 'bars' )
 			? 'icon'
-			: $this->pick( 'toggle_animation', array( 'x', 'squeeze', 'spin', 'arrow', 'minus', 'none' ), 'squeeze' );
+			: $this->pick( 'toggle_animation', array( 'x', 'squeeze', 'spin', 'vortex', 'elastic', 'plus', 'collapse', 'asym', 'arrow', 'arrow-right', 'minus', 'none' ), 'squeeze' );
 		$label      = isset( $this->s['toggle_label'] ) ? trim( (string) $this->s['toggle_label'] ) : '';
 
 		// opzioni lette dal JavaScript
@@ -1655,7 +1713,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			$closed = $this->icon_html( array( 'value' => 'fas fa-bars', 'library' => 'fa-solid' ) );
 		}
 		$open   = $this->icon_html( isset( $this->s['toggle_icon_open'] ) ? $this->s['toggle_icon_open'] : array() );
-		$effect = $this->pick( 'toggle_icon_effect', array( 'rotate', 'fade', 'none' ), 'rotate' );
+		$effect = $this->pick( 'toggle_icon_effect', array( 'rotate', 'fade', 'zoom', 'flip', 'slide', 'none' ), 'rotate' );
 
 		printf(
 			'<span class="lu3g-mm__icon lu3g-mm__icon--%1$s%2$s" aria-hidden="true"><span class="lu3g-mm__icon-closed">%3$s</span>%4$s</span>',

@@ -205,6 +205,7 @@
 		window.clearTimeout( this.timer );
 
 		this.panel.removeAttribute( 'inert' );
+		this.setOrigin();
 		this.layer.classList.add( 'is-visible' );
 		void this.layer.offsetWidth; // reflow: la transizione parte dallo stato chiuso
 		this.layer.classList.add( 'is-open' );
@@ -221,6 +222,19 @@
 		( first || this.panel ).focus( { preventScroll: true } );
 	};
 
+	/** Apertura "Cerchio dal pulsante": il cerchio parte dal centro dell'hamburger, ovunque sia nella pagina. */
+	MobileMenu.prototype.setOrigin = function () {
+		if ( this.layer.getAttribute( 'data-animation' ) !== 'circle' ) {
+			return;
+		}
+		var r = this.toggle.getBoundingClientRect();
+		if ( ! r.width && ! r.height ) {
+			return; // hamburger nascosto (es. editor): resta il valore predefinito, in alto a destra
+		}
+		this.layer.style.setProperty( '--lu3g-mm-ox', Math.round( r.left + r.width / 2 ) + 'px' );
+		this.layer.style.setProperty( '--lu3g-mm-oy', Math.round( r.top + r.height / 2 ) + 'px' );
+	};
+
 	/** silent = senza restituire il focus all'hamburger (es. si sta navigando verso un'altra pagina). */
 	MobileMenu.prototype.close = function ( silent ) {
 		if ( ! this.isOpen ) {
@@ -235,6 +249,7 @@
 		if ( current === this ) {
 			current = null;
 		}
+		this.setOrigin();
 		this.layer.classList.remove( 'is-open' );
 		this.root.classList.remove( 'is-open' );
 		this.toggle.setAttribute( 'aria-expanded', 'false' );
