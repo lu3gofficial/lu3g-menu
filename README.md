@@ -11,14 +11,18 @@ Plugin WordPress di LU3G Agenzia Web.
    subito con "Controlla di nuovo" o con il link "Controlla aggiornamenti" nella pagina Plugin).
    Facoltativo: `define( 'LU3G_GITHUB_TOKEN', 'github_pat_...' );` in `wp-config.php` alza il limite di richieste all'API GitHub.
 
-I siti con una versione precedente alla 1.0.0 (senza aggiornamenti automatici) vanno aggiornati a mano una volta:
-Plugin → Aggiungi nuovo → Carica plugin → "Sostituisci la versione attuale con quella caricata".
+## Uso
+In Elementor cerca **Menu mobile LU3G** (categoria LU3G) e trascinalo nell'intestazione.
+- **Contenuto**: menu di WordPress o posizione del tema, sottomenu a espansione o a slide, voci extra (link, telefono,
+  email, WhatsApp, social, testo, CTA), icona hamburger (linee animate o icona/SVG), logo, animazioni, breakpoint.
+- **Stile**: hamburger, pulsante chiudi, logo, pannello e overlay, voci di menu (anche posizione verticale),
+  sottomenu, Indietro e titolo (slide), voci extra.
 
 ## Pubblicare una nuova versione
 1. Modifica il codice.
-2. Aumenta la versione nell'intestazione di `lu3g-mobile-menu.php` (`Version:`), nella costante della versione e in `readme.txt` (Stable tag).
+2. Aumenta la versione nell'intestazione di `lu3g-mobile-menu.php` (`Version:`), nella costante `LU3G_MM_VERSION` e in `readme.txt` (Stable tag).
 3. Aggiungi la sezione della versione in `CHANGELOG.md` (diventa la nota della release).
-4. Commit, poi tag e invio: `git tag v1.0.0 && git push && git push --tags`
+4. Commit, poi tag e invio: `git tag vX.Y.Z && git push && git push --tags`
 5. L'automazione `.github/workflows/release.yml` controlla la versione, crea lo zip e pubblica la release.
 
 Pacchetto in locale: `sh bin/build.sh` → `dist/lu3g-mobile-menu.zip`.
