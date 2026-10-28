@@ -300,8 +300,9 @@
 	transform: none;
 }
 
-/* schermo intero: contenuto centrato in verticale (resta scorrevole se è più alto dello schermo) */
-.lu3g-mm__layer--center .lu3g-mm__body {
+/* posizione verticale del contenuto: in alto, salvo l'overlay a schermo intero che parte centrato.
+   Il controllo "Posizione verticale" di Elementor cambia questi margini (resta scorrevole se è più alto dello schermo) */
+.lu3g-mm__layer[data-animation="fullscreen"] .lu3g-mm__body {
 	margin-top: auto;
 	margin-bottom: auto;
 }
@@ -569,6 +570,143 @@
 	padding-left: 16px;
 }
 
+/* -------------------------------------------------------------------------------- Sottomenu a slide */
+
+/* il contenitore del menu ritaglia le schermate fuori campo; l'altezza la imposta il JS (quella della schermata attiva) */
+.lu3g-mm__layer--slide .lu3g-mm__nav {
+	position: relative;
+	overflow: hidden;
+}
+
+/* ogni sottomenu è una schermata sovrapposta al livello precedente, fuori a destra finché non si apre */
+.lu3g-mm__layer--slide .lu3g-mm__sub-wrap {
+	position: absolute;
+	top: 0;
+	right: 0;
+	left: 0;
+	display: block;
+	transform: translateX(100%);
+	visibility: hidden;
+}
+
+.lu3g-mm__layer--slide .lu3g-mm__item.is-sub-open > .lu3g-mm__sub-wrap {
+	transform: none;
+	visibility: visible;
+}
+
+.lu3g-mm__layer.lu3g-mm__layer--slide ul.lu3g-mm__sub {
+	overflow: visible;
+	padding-left: 0;
+}
+
+/* il livello da cui si è entrati esce verso sinistra (la voce aperta resta, ma solo per contenere il sottomenu) */
+.lu3g-mm__layer.lu3g-mm__layer--slide .lu3g-mm__nav ul.is-sub-parent > li:not(.is-sub-open),
+.lu3g-mm__layer.lu3g-mm__layer--slide .lu3g-mm__nav li.is-sub-open > .lu3g-mm__row {
+	opacity: 0 !important;
+	transform: translateX(-30%) !important;
+	pointer-events: none;
+}
+
+.lu3g-mm__layer.lu3g-mm__layer--slide .lu3g-mm__nav li.is-sub-open {
+	border-bottom-color: transparent !important;
+}
+
+/* le voci dei sottomenu hanno la stessa misura del primo livello (lo stile "Sottomenu" le può cambiare) */
+.lu3g-mm__layer.lu3g-mm__layer--slide .lu3g-mm__sub .lu3g-mm__link {
+	padding: 12px 0;
+	font-size: 18px;
+	font-weight: 500;
+}
+
+/* il ritaglio del contenitore taglierebbe il contorno di focus: lo si disegna all'interno */
+.lu3g-mm__layer--slide .lu3g-mm__nav :focus-visible {
+	outline-offset: -2px;
+}
+
+/* frecce sempre verso destra (si va "avanti"), senza rotazione da aperte */
+.lu3g-mm__layer--slide .lu3g-mm__sub-icon--chevron,
+.lu3g-mm__layer--slide .lu3g-mm__sub-icon--caret,
+.lu3g-mm__layer--slide [aria-expanded="true"] .lu3g-mm__sub-icon--chevron,
+.lu3g-mm__layer--slide [aria-expanded="true"] .lu3g-mm__sub-icon--caret {
+	transform: rotate(-90deg);
+}
+
+.lu3g-mm__layer--slide [aria-expanded="true"] .lu3g-mm__sub-icon--chevron-right {
+	transform: none;
+}
+
+.lu3g-mm__layer--slide [aria-expanded="true"] .lu3g-mm__sub-icon--plus::after {
+	transform: rotate(90deg);
+}
+
+.lu3g-mm__layer--slide [aria-expanded="true"] .lu3g-mm__sub-icon--custom .lu3g-mm__sub-icon-closed {
+	display: inline-flex;
+}
+
+.lu3g-mm__layer--slide [aria-expanded="true"] .lu3g-mm__sub-icon--custom .lu3g-mm__sub-icon-open {
+	display: none;
+}
+
+/* testata del sottomenu: Indietro + titolo della voce genitore */
+.lu3g-mm__layer .lu3g-mm__sub-head {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 4px;
+	margin: 0 0 8px;
+	padding: 0;
+}
+
+.lu3g-mm__layer .lu3g-mm__back,
+.lu3g-mm__layer .lu3g-mm__back:hover,
+.lu3g-mm__layer .lu3g-mm__back:focus {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	padding: 8px 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	color: inherit;
+	font-family: inherit;
+	font-size: 14px;
+	font-weight: 600;
+	line-height: 1.2;
+	text-transform: none;
+	letter-spacing: .02em;
+	cursor: pointer;
+}
+
+.lu3g-mm__back-icon {
+	display: inline-flex;
+	font-size: 16px;
+}
+
+.lu3g-mm__back-icon svg {
+	width: 1em;
+	height: 1em;
+}
+
+.lu3g-mm__back-icon svg:not([fill]) {
+	fill: currentColor;
+}
+
+.lu3g-mm__back-icon svg path[stroke] {
+	fill: none;
+}
+
+.lu3g-mm__layer .lu3g-mm__sub-title {
+	display: block;
+	padding: 4px 0;
+	color: inherit;
+	font-size: 22px;
+	font-weight: 600;
+	line-height: 1.25;
+	text-decoration: none;
+}
+
 /* ======================================================================================== Voci extra */
 
 .lu3g-mm__extras {
@@ -777,6 +915,31 @@ html.lu3g-mm-locked body {
 		transition: transform var(--lu3g-mm-sub-dur, 300ms) var(--lu3g-mm-e);
 	}
 
+	/* sottomenu a slide: schermate che scorrono, livello precedente che esce, altezza che si adatta */
+	.lu3g-mm__layer--slide .lu3g-mm__nav {
+		transition: height var(--lu3g-mm-sub-dur, 300ms) var(--lu3g-mm-e);
+	}
+
+	.lu3g-mm__layer--slide .lu3g-mm__sub-wrap {
+		transition:
+			transform var(--lu3g-mm-sub-dur, 300ms) var(--lu3g-mm-e),
+			visibility 0s linear var(--lu3g-mm-sub-dur, 300ms);
+	}
+
+	.lu3g-mm__layer--slide .lu3g-mm__item.is-sub-open > .lu3g-mm__sub-wrap {
+		transition:
+			transform var(--lu3g-mm-sub-dur, 300ms) var(--lu3g-mm-e),
+			visibility 0s linear 0s;
+	}
+
+	/* specificità bassa apposta: sulle voci di primo livello con l'ingresso animato vale la transizione dell'ingresso */
+	.lu3g-mm__layer--slide .lu3g-mm__nav li,
+	.lu3g-mm__layer--slide .lu3g-mm__nav .lu3g-mm__row {
+		transition:
+			opacity var(--lu3g-mm-sub-dur, 300ms) var(--lu3g-mm-e),
+			transform var(--lu3g-mm-sub-dur, 300ms) var(--lu3g-mm-e);
+	}
+
 	/* ingresso delle voci, una dopo l'altra (--i = posizione della voce, scritta dal PHP) */
 	.lu3g-mm__layer[data-items] .lu3g-mm__anim {
 		opacity: 0;
@@ -806,5 +969,10 @@ html.lu3g-mm-locked body {
 		opacity: 1;
 		transform: none;
 		transition-delay: calc(var(--lu3g-mm-d) * .35 + var(--i, 0) * var(--lu3g-mm-stagger, 50ms));
+	}
+
+	/* dopo il primo passaggio tra le schermate a slide le voci si muovono subito, senza il ritardo dell'ingresso */
+	.lu3g-mm__layer.lu3g-mm__layer--nav .lu3g-mm__anim {
+		transition-delay: 0s !important;
 	}
 }

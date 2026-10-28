@@ -5,8 +5,9 @@
  * - sposta overlay e pannello in fondo al <body>, così un'intestazione con transform o filtri non ne blocca
  *   il position: fixed; il contenitore porta le classi Elementor del widget, quindi gli stili restano validi;
  * - blocca lo scroll della pagina, intrappola il focus nel pannello e lo restituisce all'hamburger alla chiusura;
- * - apre e chiude i sottomenu (aria-expanded), con l'opzione "un sottomenu aperto alla volta";
- * - frecce su/giù, Home e Fine per spostarsi tra le voci.
+ * - apre e chiude i sottomenu (aria-expanded): a espansione, con l'opzione "un sottomenu aperto alla volta",
+ *   oppure a slide, dove ogni sottomenu entra da destra come una nuova schermata con il pulsante Indietro;
+ * - frecce su/giù, Home e Fine per spostarsi tra le voci; nei sottomenu a slide freccia destra entra, sinistra torna indietro.
  * Le opzioni arrivano dal PHP nell'attributo data-lu3g-mm.
  */
 ( function () {
@@ -22,7 +23,7 @@
 	/** Elementi raggiungibili da tastiera e visibili dentro un contenitore. */
 	function focusables( container ) {
 		return Array.prototype.filter.call( container.querySelectorAll( FOCUSABLE ), function ( el ) {
-			return el.getClientRects().length > 0 && window.getComputedStyle( el ).visibility !== 'hidden';
+			return el.getClientRects().length > 0 && window.getComputedStyle( el ).visibility !== 'hidden' && ! el.closest( '[inert]' );
 		} );
 	}
 
@@ -56,6 +57,8 @@
 			return;
 		}
 		this.panel = this.layer.querySelector( '.lu3g-mm__panel' );
+		this.nav = this.layer.querySelector( '.lu3g-mm__nav' );
+		this.slide = this.layer.classList.contains( 'lu3g-mm__layer--slide' ) && !! this.nav;
 		this.isOpen = false;
 		this.timer = 0;
 
@@ -128,6 +131,11 @@
 				}
 				return;
 			}
+			var back = t.closest( '[data-sub-back]' );
+			if ( back ) {
+				self.slideBack( back.closest( '.lu3g-mm__item.is-sub-open' ) );
+				return;
+			}
 			var sub = t.closest( '[data-sub-toggle]' );
 			if ( sub ) {
 				e.preventDefault();
@@ -139,6 +147,15 @@
 				self.onLink( link, e );
 			}
 		} );
+
+		// a slide l'altezza del menu è quella della schermata attiva: si ricalcola se cambia la larghezza
+		if ( this.slide ) {
+			window.addEventListener( 'resize', function () {
+				if ( self.isOpen && self.nav.style.height ) {
+					self.nav.style.height = self.activeView().offsetHeight + 'px';
+				}
+			} );
+		}
 
 		// sopra il breakpoint il widget sparisce: un pannello rimasto aperto si chiude (es. rotazione del tablet)
 		if ( this.opts.breakpoint > 0 && window.matchMedia ) {
@@ -229,6 +246,10 @@
 
 		this.timer = window.setTimeout( function () {
 			self.layer.classList.remove( 'is-visible' );
+			// a slide si riparte dal primo livello alla prossima apertura
+			if ( self.slide ) {
+				self.resetSlides();
+			}
 		}, this.duration() );
 
 		if ( hadFocus && ! silent ) {
@@ -245,6 +266,13 @@
 		}
 		var open = btn.getAttribute( 'aria-expanded' ) !== 'true';
 		var self = this;
+
+		if ( this.slide ) {
+			if ( open ) {
+				this.slideIn( item );
+			}
+			return;
+		}
 
 		if ( open && this.opts.accordion && item.parentNode ) {
 			Array.prototype.forEach.call( item.parentNode.children, function ( sibling ) {
@@ -263,6 +291,133 @@
 		if ( btn ) {
 			btn.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 		}
+	};
+
+	/* ------------------------------------------------------------------------------- sottomenu a slide */
+
+	/** Durata dello scorrimento (variabile CSS --lu3g-mm-sub-dur), 0 con "riduci movimento". */
+	MobileMenu.prototype.subDuration = function () {
+		if ( reducedMotion() ) {
+			return 0;
+		}
+		var raw = window.getComputedStyle( this.layer ).getPropertyValue( '--lu3g-mm-sub-dur' ).trim();
+		var n = parseFloat( raw );
+		return isNaN( n ) ? 300 : ( /ms$/.test( raw ) ? n : n * 1000 );
+	};
+
+	/** Schermata visibile: il sottomenu aperto più in profondità, oppure il primo livello. */
+	MobileMenu.prototype.activeView = function () {
+		var open = this.nav.querySelectorAll( '.lu3g-mm__item.is-sub-open' );
+		if ( ! open.length ) {
+			return this.nav.querySelector( '.lu3g-mm__menu' );
+		}
+		return this.subWrap( open[ open.length - 1 ] );
+	};
+
+	MobileMenu.prototype.subWrap = function ( item ) {
+		for ( var i = 0; i < item.children.length; i++ ) {
+			if ( item.children[ i ].classList.contains( 'lu3g-mm__sub-wrap' ) ) {
+				return item.children[ i ];
+			}
+		}
+		return null;
+	};
+
+	/** Porta il menu all'altezza della schermata indicata (partendo dall'altezza attuale, per la transizione). */
+	MobileMenu.prototype.fitHeight = function ( view ) {
+		if ( ! this.nav.style.height ) {
+			this.nav.style.height = this.nav.offsetHeight + 'px';
+			void this.nav.offsetHeight;
+		}
+		this.nav.style.height = view.offsetHeight + 'px';
+	};
+
+	/** Se il pannello è scorso più in basso dell'inizio del menu, lo riporta su: la nuova schermata parte dall'alto. */
+	MobileMenu.prototype.revealNav = function () {
+		var top = this.nav.getBoundingClientRect().top - this.panel.getBoundingClientRect().top;
+		if ( top < 0 ) {
+			this.panel.scrollTop += top;
+		}
+	};
+
+	/** Le voci del livello che esce non devono essere raggiungibili con Tab né dagli screen reader. */
+	MobileMenu.prototype.setLevelInert = function ( item, inert ) {
+		var row = item.querySelector( '.lu3g-mm__row' );
+		var parts = Array.prototype.filter.call( item.parentNode.children, function ( el ) {
+			return el !== item;
+		} );
+		if ( row ) {
+			parts.push( row );
+		}
+		parts.forEach( function ( el ) {
+			if ( inert ) {
+				el.setAttribute( 'inert', '' );
+			} else {
+				el.removeAttribute( 'inert' );
+			}
+		} );
+	};
+
+	MobileMenu.prototype.slideIn = function ( item ) {
+		var wrap = this.subWrap( item );
+		if ( ! wrap ) {
+			return;
+		}
+		this.layer.classList.add( 'lu3g-mm__layer--nav' );
+		item.parentNode.classList.add( 'is-sub-parent' );
+		this.setSub( item, true );
+		this.setLevelInert( item, true );
+		this.fitHeight( wrap );
+		this.revealNav();
+
+		var back = wrap.querySelector( '[data-sub-back]' );
+		if ( back ) {
+			back.focus( { preventScroll: true } );
+		}
+	};
+
+	MobileMenu.prototype.slideBack = function ( item ) {
+		if ( ! item ) {
+			return;
+		}
+		var list = item.parentNode;
+		list.classList.remove( 'is-sub-parent' );
+		this.setSub( item, false );
+		this.setLevelInert( item, false );
+		this.fitHeight( list.closest( '.lu3g-mm__sub-wrap' ) || list );
+		this.revealNav();
+
+		var toggle = item.querySelector( '.lu3g-mm__row [data-sub-toggle]' );
+		if ( toggle ) {
+			toggle.focus( { preventScroll: true } );
+		}
+
+		// tornati al primo livello il menu riprende l'altezza naturale
+		if ( ! this.nav.querySelector( '.is-sub-open' ) ) {
+			var nav = this.nav;
+			window.clearTimeout( this.heightTimer );
+			this.heightTimer = window.setTimeout( function () {
+				if ( ! nav.querySelector( '.is-sub-open' ) ) {
+					nav.style.height = '';
+				}
+			}, this.subDuration() );
+		}
+	};
+
+	/** Tutti i sottomenu chiusi, senza animazione visibile (il pannello è già nascosto). */
+	MobileMenu.prototype.resetSlides = function () {
+		var self = this;
+		Array.prototype.forEach.call( this.nav.querySelectorAll( '.is-sub-open' ), function ( item ) {
+			self.setSub( item, false );
+		} );
+		Array.prototype.forEach.call( this.nav.querySelectorAll( '.is-sub-parent' ), function ( list ) {
+			list.classList.remove( 'is-sub-parent' );
+		} );
+		Array.prototype.forEach.call( this.nav.querySelectorAll( '[inert]' ), function ( el ) {
+			el.removeAttribute( 'inert' );
+		} );
+		this.nav.style.height = '';
+		this.layer.classList.remove( 'lu3g-mm__layer--nav' );
 	};
 
 	/* -------------------------------------------------------------------------------------------- link */
@@ -341,6 +496,19 @@
 		// frecce, Home e Fine tra le voci (non dentro i campi di testo)
 		if ( /^(INPUT|TEXTAREA|SELECT)$/.test( active.tagName ) ) {
 			return;
+		}
+		if ( this.slide && index !== -1 ) {
+			if ( e.key === 'ArrowRight' && active.hasAttribute( 'data-sub-toggle' ) && active.getAttribute( 'aria-expanded' ) !== 'true' ) {
+				e.preventDefault();
+				this.slideIn( active.closest( '.lu3g-mm__item' ) );
+				return;
+			}
+			var openItem = e.key === 'ArrowLeft' && this.nav.contains( active ) ? active.closest( '.lu3g-mm__item.is-sub-open' ) : null;
+			if ( openItem ) {
+				e.preventDefault();
+				this.slideBack( openItem );
+				return;
+			}
 		}
 		if ( index === -1 ) {
 			// focus sul pannello (apertura con tocco o click): la prima freccia giù porta alla prima voce

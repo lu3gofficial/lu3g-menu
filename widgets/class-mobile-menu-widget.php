@@ -45,6 +45,8 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 	private $sub_icon_html = '';
 	/** URL della pagina corrente, normalizzato (evidenziazione delle voci extra). */
 	private $current_url = '';
+	/** Sottomenu a slide (true) o a espansione (false). */
+	private $slide = false;
 
 	public function get_name() {
 		return 'lu3g-mobile-menu';
@@ -94,6 +96,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$this->style_items();
 		$this->style_sub_icon();
 		$this->style_submenu();
+		$this->style_slide();
 		$this->style_extras();
 	}
 
@@ -160,6 +163,43 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'condition'   => array( 'menu_source!' => 'none' ),
 		) );
 
+		$this->add_control( 'submenu_mode', array(
+			'label'       => esc_html__( 'Apertura dei sottomenu', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::SELECT,
+			'default'     => 'accordion',
+			'options'     => array(
+				'accordion' => esc_html__( 'Espansione (sotto la voce)', 'lu3g-mobile-menu' ),
+				'slide'     => esc_html__( 'Scorrimento a slide (con Indietro)', 'lu3g-mobile-menu' ),
+			),
+			'description' => esc_html__( 'Con lo scorrimento ogni sottomenu entra da destra al posto del livello precedente.', 'lu3g-mobile-menu' ),
+			'separator'   => 'before',
+			'condition'   => array( 'menu_source!' => 'none' ),
+		) );
+
+		$this->add_control( 'slide_back_label', array(
+			'label'     => esc_html__( 'Testo del pulsante Indietro', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::TEXT,
+			'default'   => esc_html__( 'Indietro', 'lu3g-mobile-menu' ),
+			'condition' => array( 'menu_source!' => 'none', 'submenu_mode' => 'slide' ),
+		) );
+
+		$this->add_control( 'slide_back_icon', array(
+			'label'       => esc_html__( 'Icona Indietro', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::ICONS,
+			'skin'        => 'inline',
+			'label_block' => false,
+			'description' => esc_html__( 'Vuota = freccia a sinistra.', 'lu3g-mobile-menu' ),
+			'condition'   => array( 'menu_source!' => 'none', 'submenu_mode' => 'slide' ),
+		) );
+
+		$this->add_control( 'slide_show_title', array(
+			'label'       => esc_html__( 'Titolo della voce genitore', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::SWITCHER,
+			'default'     => 'yes',
+			'description' => esc_html__( 'In cima al sottomenu, sotto Indietro; se la voce ha un link è cliccabile.', 'lu3g-mobile-menu' ),
+			'condition'   => array( 'menu_source!' => 'none', 'submenu_mode' => 'slide' ),
+		) );
+
 		$this->add_control( 'submenu_icon', array(
 			'label'     => esc_html__( 'Icona dei sottomenu', 'lu3g-mobile-menu' ),
 			'type'      => Controls_Manager::SELECT,
@@ -171,8 +211,8 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				'plus'          => esc_html__( 'Più / meno', 'lu3g-mobile-menu' ),
 				'custom'        => esc_html__( 'Icona personalizzata', 'lu3g-mobile-menu' ),
 			),
-			'separator' => 'before',
-			'condition' => array( 'menu_source!' => 'none' ),
+			'description' => esc_html__( 'Con lo scorrimento a slide le frecce puntano sempre a destra.', 'lu3g-mobile-menu' ),
+			'condition'   => array( 'menu_source!' => 'none' ),
 		) );
 
 		$this->add_control( 'submenu_icon_closed', array(
@@ -194,7 +234,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'type'        => Controls_Manager::SWITCHER,
 			'default'     => 'yes',
 			'description' => esc_html__( 'Aprendo un sottomenu si chiudono quelli dello stesso livello.', 'lu3g-mobile-menu' ),
-			'condition'   => array( 'menu_source!' => 'none' ),
+			'condition'   => array( 'menu_source!' => 'none', 'submenu_mode!' => 'slide' ),
 		) );
 
 		$this->add_control( 'expand_current', array(
@@ -202,7 +242,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'type'        => Controls_Manager::SWITCHER,
 			'default'     => 'yes',
 			'description' => esc_html__( 'I sottomenu che contengono la pagina corrente partono aperti. Le voci con link "#" aprono il loro sottomenu.', 'lu3g-mobile-menu' ),
-			'condition'   => array( 'menu_source!' => 'none' ),
+			'condition'   => array( 'menu_source!' => 'none', 'submenu_mode!' => 'slide' ),
 		) );
 
 		$this->end_controls_section();
@@ -439,13 +479,6 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				'right' => esc_html__( 'Destra', 'lu3g-mobile-menu' ),
 			),
 			'condition' => array( 'panel_animation' => 'fade' ),
-		) );
-
-		$this->add_control( 'panel_center', array(
-			'label'     => esc_html__( 'Contenuto centrato in verticale', 'lu3g-mobile-menu' ),
-			'type'      => Controls_Manager::SWITCHER,
-			'default'   => 'yes',
-			'condition' => array( 'panel_animation' => 'fullscreen' ),
 		) );
 
 		$this->add_control( 'show_close', array(
@@ -1042,6 +1075,37 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'tab'   => Controls_Manager::TAB_STYLE,
 		) );
 
+		// sposta tutto il contenuto sotto l'intestazione (menu e voci extra) dentro il pannello
+		$this->add_responsive_control( 'items_valign', array(
+			'label'                => esc_html__( 'Posizione verticale', 'lu3g-mobile-menu' ),
+			'type'                 => Controls_Manager::CHOOSE,
+			'options'              => array(
+				'top'    => array( 'title' => esc_html__( 'In alto', 'lu3g-mobile-menu' ), 'icon' => 'eicon-v-align-top' ),
+				'center' => array( 'title' => esc_html__( 'Al centro', 'lu3g-mobile-menu' ), 'icon' => 'eicon-v-align-middle' ),
+				'bottom' => array( 'title' => esc_html__( 'In basso', 'lu3g-mobile-menu' ), 'icon' => 'eicon-v-align-bottom' ),
+			),
+			'description'          => esc_html__( 'Vale per menu e voci extra insieme. Predefinito: in alto (al centro con l\'overlay a schermo intero).', 'lu3g-mobile-menu' ),
+			'selectors_dictionary' => array(
+				'top'    => 'margin-top: 0; margin-bottom: 0;',
+				'center' => 'margin-top: auto; margin-bottom: auto;',
+				'bottom' => 'margin-top: auto; margin-bottom: 0;',
+			),
+			'selectors'            => array( '{{WRAPPER}} .lu3g-mm__body' => '{{VALUE}}' ),
+		) );
+
+		$this->add_responsive_control( 'items_offset', array(
+			'label'       => esc_html__( 'Spostamento verticale', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::SLIDER,
+			'size_units'  => array( 'px', 'vh' ),
+			'range'       => array(
+				'px' => array( 'min' => -300, 'max' => 300 ),
+				'vh' => array( 'min' => -40, 'max' => 40 ),
+			),
+			'description' => esc_html__( 'Regolazione fine: valori positivi spostano le voci verso il basso, negativi verso l\'alto.', 'lu3g-mobile-menu' ),
+			'selectors'   => array( '{{WRAPPER}} .lu3g-mm__body' => 'position: relative; top: {{SIZE}}{{UNIT}};' ),
+			'separator'   => 'after',
+		) );
+
 		$this->add_group_control( Group_Control_Typography::get_type(), array(
 			'name'     => 'items_typo',
 			'selector' => self::TOP_LINK,
@@ -1170,6 +1234,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'size_units' => array( 'px', 'em' ),
 			'range'      => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
 			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__sub' => 'padding-left: {{SIZE}}{{UNIT}};' ),
+			'condition'  => array( 'submenu_mode!' => 'slide' ),
 		) );
 
 		$this->color_tabs( 'sub', self::SUB_LINK, self::SUB_ITEM );
@@ -1189,6 +1254,71 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		) );
 
 		$this->divider_controls( 'sub', self::SUB_ITEM, '' );
+
+		$this->end_controls_section();
+	}
+
+	/* ------------------------------------------------------------------------- Stile: navigazione a slide */
+	private function style_slide() {
+		$this->start_controls_section( 'style_slide', array(
+			'label'     => esc_html__( 'Indietro e titolo (slide)', 'lu3g-mobile-menu' ),
+			'tab'       => Controls_Manager::TAB_STYLE,
+			'condition' => array( 'menu_source!' => 'none', 'submenu_mode' => 'slide' ),
+		) );
+
+		$this->add_group_control( Group_Control_Typography::get_type(), array(
+			'name'     => 'back_typo',
+			'selector' => '{{WRAPPER}} .lu3g-mm__back',
+		) );
+
+		$this->add_control( 'back_color', array(
+			'label'     => esc_html__( 'Colore Indietro', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mm__back' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'back_color_hover', array(
+			'label'     => esc_html__( 'Colore Indietro hover', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mm__back:hover, {{WRAPPER}} .lu3g-mm__back:focus-visible' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'back_icon_size', array(
+			'label'      => esc_html__( 'Dimensione icona', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 8, 'max' => 40 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__back-icon' => 'font-size: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'slide_title_heading', array(
+			'label'     => esc_html__( 'Titolo', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::HEADING,
+			'separator' => 'before',
+			'condition' => array( 'slide_show_title' => 'yes' ),
+		) );
+
+		$this->add_group_control( Group_Control_Typography::get_type(), array(
+			'name'      => 'slide_title_typo',
+			'selector'  => '{{WRAPPER}} .lu3g-mm__sub-title',
+			'condition' => array( 'slide_show_title' => 'yes' ),
+		) );
+
+		$this->add_control( 'slide_title_color', array(
+			'label'     => esc_html__( 'Colore titolo', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mm__sub-title' => 'color: {{VALUE}};' ),
+			'condition' => array( 'slide_show_title' => 'yes' ),
+		) );
+
+		$this->add_responsive_control( 'slide_head_spacing', array(
+			'label'      => esc_html__( 'Distanza dalle voci', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__sub-head' => 'margin-bottom: {{SIZE}}{{UNIT}};' ),
+			'separator'  => 'before',
+		) );
 
 		$this->end_controls_section();
 	}
@@ -1459,8 +1589,9 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		if ( $this->yes( 'highlight_ancestors' ) ) {
 			$layer_class[] = 'lu3g-mm__layer--hl-anc';
 		}
-		if ( 'fullscreen' === $panel_anim && $this->yes( 'panel_center' ) ) {
-			$layer_class[] = 'lu3g-mm__layer--center';
+		$this->slide = 'none' !== $this->s['menu_source'] && 'slide' === $this->pick( 'submenu_mode', array( 'accordion', 'slide' ), 'accordion' );
+		if ( $this->slide ) {
+			$layer_class[] = 'lu3g-mm__layer--slide';
 		}
 
 		// visibile solo sotto il breakpoint (CSS in linea, così non c'è nessun lampo prima del JavaScript)
@@ -1673,7 +1804,8 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			$has_kids  = $can_go && ! empty( $tree[ $item->ID ] );
 			$current   = in_array( 'current-menu-item', $classes, true );
 			$ancestor  = in_array( 'current-menu-ancestor', $classes, true ) || in_array( 'current-menu-parent', $classes, true );
-			$open      = $has_kids && $ancestor && $this->yes( 'expand_current' );
+			// a slide si parte sempre dal primo livello
+			$open      = $has_kids && $ancestor && $this->yes( 'expand_current' ) && ! $this->slide;
 			$url       = trim( (string) $item->url );
 			$is_hash   = '' === $url || '#' === $url;
 			$sub_id    = $this->uid . '-sub-' . $item->ID;
@@ -1753,11 +1885,43 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			if ( $has_kids ) {
 				echo '<div class="lu3g-mm__sub-wrap" id="' . esc_attr( $sub_id ) . '">';
 				echo '<ul class="lu3g-mm__sub lu3g-mm__sub--level-' . (int) ( $level + 1 ) . '">';
+				if ( $this->slide ) {
+					$this->render_slide_head( $title, $is_hash ? '' : $url, $current );
+				}
 				$this->render_items( $tree, $item->ID, $level + 1, $max_depth, $args );
 				echo '</ul></div>';
 			}
 			echo '</li>';
 		}
+	}
+
+	/**
+	 * Testata di un sottomenu a slide: pulsante Indietro e titolo della voce genitore (link se la voce ne ha uno).
+	 * È il primo <li> del sottomenu, così sparisce insieme alle voci quando si apre il livello successivo.
+	 */
+	private function render_slide_head( $title, $url, $current ) {
+		$label = isset( $this->s['slide_back_label'] ) && '' !== trim( (string) $this->s['slide_back_label'] )
+			? $this->s['slide_back_label']
+			: __( 'Indietro', 'lu3g-mobile-menu' );
+		$icon  = $this->icon_html( isset( $this->s['slide_back_icon'] ) ? $this->s['slide_back_icon'] : array() );
+		if ( '' === $icon ) {
+			$icon = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+		}
+
+		echo '<li class="lu3g-mm__sub-head">';
+		printf(
+			'<button type="button" class="lu3g-mm__back" data-sub-back><span class="lu3g-mm__back-icon" aria-hidden="true">%1$s</span><span class="lu3g-mm__back-text">%2$s</span></button>',
+			$icon, // phpcs:ignore WordPress.Security.EscapeOutput -- SVG fisso o HTML di Icons_Manager
+			esc_html( $label )
+		);
+		if ( $this->yes( 'slide_show_title' ) ) {
+			if ( '' !== $url ) {
+				echo '<a class="lu3g-mm__sub-title" href="' . esc_url( $url ) . '"' . ( $current ? ' aria-current="page"' : '' ) . '>' . $title . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput -- titolo filtrato con wp_kses_post
+			} else {
+				echo '<span class="lu3g-mm__sub-title">' . $title . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			}
+		}
+		echo '</li>';
 	}
 
 	/** Icona di apertura dei sottomenu, secondo la scelta nel widget. */
