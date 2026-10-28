@@ -133,6 +133,58 @@
 	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
 }
 
+/* Icona o SVG personalizzato: icona "chiuso" e icona "aperto" sovrapposte nella stessa cella */
+.lu3g-mm__icon {
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	font-size: 28px;
+	line-height: 1;
+}
+
+.lu3g-mm__icon > span {
+	display: inline-flex;
+	grid-area: 1 / 1;
+	align-items: center;
+	justify-content: center;
+}
+
+.lu3g-mm__icon i {
+	font-size: 1em;
+}
+
+.lu3g-mm__icon svg {
+	display: block;
+	width: 1em;
+	height: 1em;
+}
+
+/* SVG senza colore proprio: prende il colore del pulsante */
+.lu3g-mm__icon svg:not([fill]) {
+	fill: currentColor;
+}
+
+.lu3g-mm__icon-open,
+.lu3g-mm.is-open .lu3g-mm__icon:not(.lu3g-mm__icon--single) .lu3g-mm__icon-closed {
+	opacity: 0;
+}
+
+.lu3g-mm.is-open .lu3g-mm__icon-open {
+	opacity: 1;
+}
+
+.lu3g-mm__icon--rotate .lu3g-mm__icon-open {
+	transform: rotate(-90deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__icon--rotate .lu3g-mm__icon-closed {
+	transform: rotate(90deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__icon--rotate .lu3g-mm__icon-open {
+	transform: none;
+}
+
 /* =========================================================================================== Livello */
 
 /* overlay + pannello, fissi sullo schermo; nascosti finché il JS non aggiunge .is-visible */
@@ -257,8 +309,30 @@
 .lu3g-mm__head {
 	display: flex;
 	flex: none;
+	align-items: center;
 	justify-content: flex-end;
+	gap: 16px;
 	margin-bottom: 8px;
+}
+
+/* il logo occupa la sinistra, il pulsante chiudi resta a destra */
+.lu3g-mm__logo {
+	display: block;
+	min-width: 0;
+	margin-right: auto;
+	line-height: 0;
+}
+
+.lu3g-mm__logo.lu3g-mm__notice {
+	line-height: 1.4;
+}
+
+.lu3g-mm__logo img,
+.lu3g-mm__logo svg {
+	display: block;
+	width: 140px;
+	max-width: 100%;
+	height: auto;
 }
 
 .lu3g-mm__layer .lu3g-mm__close,
@@ -603,10 +677,25 @@
 
 /* ============================================================================================= Focus */
 
-.lu3g-mm__toggle:focus-visible,
+/* molti temi mettono un contorno (spesso blu) su :focus, che resta dopo un tocco o un click:
+   qui il contorno compare solo navigando con la tastiera (:focus-visible), nel colore scelto nello stile */
+.lu3g-mm .lu3g-mm__toggle:focus:not(:focus-visible),
+.lu3g-mm__layer :focus:not(:focus-visible) {
+	outline: none !important;
+	box-shadow: none;
+}
+
+.lu3g-mm .lu3g-mm__toggle:focus-visible,
 .lu3g-mm__layer :focus-visible {
-	outline: 2px solid currentColor;
+	outline: 2px solid var(--lu3g-mm-focus, currentColor) !important;
 	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* il pannello riceve il focus all'apertura con tocco o click: nessun contorno */
+.lu3g-mm__layer .lu3g-mm__panel:focus,
+.lu3g-mm__layer .lu3g-mm__panel:focus-visible {
+	outline: none !important;
 }
 
 /* ====================================================================================== Blocco scroll */
@@ -651,6 +740,14 @@ html.lu3g-mm-locked body {
 			top calc(var(--lu3g-mm-d) / 2) var(--lu3g-mm-e) 0s,
 			transform calc(var(--lu3g-mm-d) / 2) var(--lu3g-mm-e) calc(var(--lu3g-mm-d) / 2),
 			opacity 0s linear calc(var(--lu3g-mm-d) / 2);
+	}
+
+	.lu3g-mm__icon > span {
+		transition: opacity var(--lu3g-mm-d) var(--lu3g-mm-e), transform var(--lu3g-mm-d) var(--lu3g-mm-e);
+	}
+
+	.lu3g-mm__icon--none > span {
+		transition: none;
 	}
 
 	/* pannello e overlay */

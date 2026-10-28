@@ -107,11 +107,12 @@
 	MobileMenu.prototype.bind = function () {
 		var self = this;
 
-		this.toggle.addEventListener( 'click', function () {
+		this.toggle.addEventListener( 'click', function ( e ) {
 			if ( self.isOpen ) {
 				self.close();
 			} else {
-				self.open();
+				// e.detail === 0: "click" generato da Invio o Spazio, cioè apertura da tastiera
+				self.open( false, e.detail === 0 );
 			}
 		} );
 
@@ -168,8 +169,12 @@
 		return isNaN( n ) ? 450 : ( /ms$/.test( raw ) ? n : n * 1000 );
 	};
 
-	/** preview = aperto nell'editor: niente blocco dello scroll né spostamento del focus. */
-	MobileMenu.prototype.open = function ( preview ) {
+	/**
+	 * preview = aperto nell'editor: niente blocco dello scroll né spostamento del focus.
+	 * keyboard = aperto da tastiera: il focus va sulla prima voce (con il suo contorno); con tocco o click va sul
+	 * pannello stesso, senza contorni visibili, e il primo Tab porta comunque alla prima voce.
+	 */
+	MobileMenu.prototype.open = function ( preview, keyboard ) {
 		if ( this.isOpen ) {
 			return;
 		}
@@ -195,10 +200,8 @@
 		if ( this.opts.lock ) {
 			lockScroll();
 		}
-		var first = focusables( this.panel )[ 0 ];
-		if ( first ) {
-			first.focus( { preventScroll: true } );
-		}
+		var first = keyboard ? focusables( this.panel )[ 0 ] : null;
+		( first || this.panel ).focus( { preventScroll: true } );
 	};
 
 	/** silent = senza restituire il focus all'hamburger (es. si sta navigando verso un'altra pagina). */
@@ -207,7 +210,9 @@
 			return;
 		}
 		var self = this;
-		var hadFocus = this.panel.contains( document.activeElement );
+		// il focus torna all'hamburger se era nel pannello, o se il click sull'overlay l'ha spostato sul <body>
+		var active = document.activeElement;
+		var hadFocus = ! active || active === document.body || this.panel.contains( active );
 
 		this.isOpen = false;
 		if ( current === this ) {
@@ -334,7 +339,15 @@
 		}
 
 		// frecce, Home e Fine tra le voci (non dentro i campi di testo)
-		if ( index === -1 || /^(INPUT|TEXTAREA|SELECT)$/.test( active.tagName ) ) {
+		if ( /^(INPUT|TEXTAREA|SELECT)$/.test( active.tagName ) ) {
+			return;
+		}
+		if ( index === -1 ) {
+			// focus sul pannello (apertura con tocco o click): la prima freccia giù porta alla prima voce
+			if ( active === this.panel && e.key === 'ArrowDown' ) {
+				e.preventDefault();
+				list[ 0 ].focus();
+			}
 			return;
 		}
 		var next = null;

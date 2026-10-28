@@ -4,7 +4,7 @@ Tags: elementor, menu, mobile, hamburger, off-canvas
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 
 Widget Elementor con menu hamburger per mobile.
@@ -26,5 +26,7 @@ Widget Elementor con menu hamburger per mobile.
 2. In Elementor cerca "Menu mobile LU3G" (categoria LU3G) e trascinalo nell'intestazione.
 
 == Changelog ==
+= 1.0.1 =
+* Icona hamburger personalizzata (anche SVG), logo nel pannello, easing personalizzato corretto, contorno di focus solo da tastiera.
 = 1.0.0 =
 * Prima versione: widget Elementor con menu hamburger per mobile.

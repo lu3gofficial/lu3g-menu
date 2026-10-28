@@ -10,7 +10,7 @@
  *                                  perché un'intestazione con transform/filtri non blocchi il position: fixed
  *       .lu3g-mm__overlay
  *       .lu3g-mm__panel            role="dialog", inert quando è chiuso
- *         .lu3g-mm__head           pulsante chiudi
+ *         .lu3g-mm__head           logo (facoltativo) + pulsante chiudi
  *         .lu3g-mm__body           voci extra (prima) + nav del menu WP + voci extra (dopo)
  */
 
@@ -83,11 +83,13 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$this->controls_extras();
 		$this->controls_toggle();
 		$this->controls_panel();
+		$this->controls_logo();
 		$this->controls_animation();
 		$this->controls_behavior();
 
 		$this->style_toggle();
 		$this->style_close();
+		$this->style_logo();
 		$this->style_panel();
 		$this->style_items();
 		$this->style_sub_icon();
@@ -315,6 +317,48 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 	private function controls_toggle() {
 		$this->start_controls_section( 'section_toggle', array( 'label' => esc_html__( 'Icona hamburger', 'lu3g-mobile-menu' ) ) );
 
+		$this->add_control( 'toggle_icon_type', array(
+			'label'   => esc_html__( 'Icona', 'lu3g-mobile-menu' ),
+			'type'    => Controls_Manager::SELECT,
+			'default' => 'bars',
+			'options' => array(
+				'bars' => esc_html__( 'Linee animate', 'lu3g-mobile-menu' ),
+				'icon' => esc_html__( 'Icona o SVG personalizzato', 'lu3g-mobile-menu' ),
+			),
+		) );
+
+		$this->add_control( 'toggle_icon', array(
+			'label'       => esc_html__( 'Icona (chiuso)', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::ICONS,
+			'skin'        => 'inline',
+			'label_block' => false,
+			'default'     => array( 'value' => 'fas fa-bars', 'library' => 'fa-solid' ),
+			'description' => esc_html__( '"Carica SVG" richiede il caricamento SVG attivo in Elementor → Impostazioni → Avanzate.', 'lu3g-mobile-menu' ),
+			'condition'   => array( 'toggle_icon_type' => 'icon' ),
+		) );
+
+		$this->add_control( 'toggle_icon_open', array(
+			'label'       => esc_html__( 'Icona (aperto)', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::ICONS,
+			'skin'        => 'inline',
+			'label_block' => false,
+			'default'     => array( 'value' => 'fas fa-times', 'library' => 'fa-solid' ),
+			'description' => esc_html__( 'Vuota = resta la stessa icona.', 'lu3g-mobile-menu' ),
+			'condition'   => array( 'toggle_icon_type' => 'icon' ),
+		) );
+
+		$this->add_control( 'toggle_icon_effect', array(
+			'label'     => esc_html__( 'Passaggio tra le icone', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'rotate',
+			'options'   => array(
+				'rotate' => esc_html__( 'Rotazione', 'lu3g-mobile-menu' ),
+				'fade'   => esc_html__( 'Dissolvenza', 'lu3g-mobile-menu' ),
+				'none'   => esc_html__( 'Nessuno', 'lu3g-mobile-menu' ),
+			),
+			'condition' => array( 'toggle_icon_type' => 'icon' ),
+		) );
+
 		$this->add_control( 'toggle_animation', array(
 			'label'   => esc_html__( 'Animazione dell\'icona', 'lu3g-mobile-menu' ),
 			'type'    => Controls_Manager::SELECT,
@@ -327,6 +371,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				'minus'   => esc_html__( 'Hamburger → linea', 'lu3g-mobile-menu' ),
 				'none'    => esc_html__( 'Nessuna', 'lu3g-mobile-menu' ),
 			),
+			'condition' => array( 'toggle_icon_type' => 'bars' ),
 		) );
 
 		$this->add_control( 'toggle_label', array(
@@ -432,6 +477,53 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$this->end_controls_section();
 	}
 
+	/* ------------------------------------------------------------------------------------ Contenuto: logo */
+	private function controls_logo() {
+		$this->start_controls_section( 'section_logo', array( 'label' => esc_html__( 'Logo', 'lu3g-mobile-menu' ) ) );
+
+		$this->add_control( 'show_logo', array(
+			'label'       => esc_html__( 'Logo nel pannello', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::SWITCHER,
+			'default'     => '',
+			'description' => esc_html__( 'In alto, accanto al pulsante chiudi.', 'lu3g-mobile-menu' ),
+		) );
+
+		$this->add_control( 'logo_source', array(
+			'label'     => esc_html__( 'Immagine', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'site',
+			'options'   => array(
+				'site'   => esc_html__( 'Logo del sito', 'lu3g-mobile-menu' ),
+				'custom' => esc_html__( 'Carica un\'immagine', 'lu3g-mobile-menu' ),
+			),
+			'condition' => array( 'show_logo' => 'yes' ),
+		) );
+
+		$this->add_control( 'logo_site_note', array(
+			'type'            => Controls_Manager::RAW_HTML,
+			'raw'             => esc_html__( 'Il logo impostato in Elementor → Impostazioni del sito → Identità del sito (o in Aspetto → Personalizza).', 'lu3g-mobile-menu' ),
+			'content_classes' => 'elementor-descriptor',
+			'condition'       => array( 'show_logo' => 'yes', 'logo_source' => 'site' ),
+		) );
+
+		$this->add_control( 'logo_image', array(
+			'label'     => esc_html__( 'Scegli immagine', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::MEDIA,
+			'dynamic'   => array( 'active' => true ),
+			'condition' => array( 'show_logo' => 'yes', 'logo_source' => 'custom' ),
+		) );
+
+		$this->add_control( 'logo_link', array(
+			'label'       => esc_html__( 'Link alla home', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::SWITCHER,
+			'default'     => 'yes',
+			'description' => esc_html__( 'Con WPML e Polylang porta alla home nella lingua corrente.', 'lu3g-mobile-menu' ),
+			'condition'   => array( 'show_logo' => 'yes' ),
+		) );
+
+		$this->end_controls_section();
+	}
+
 	/* ------------------------------------------------------------------------------- Contenuto: animazioni */
 	private function controls_animation() {
 		$this->start_controls_section( 'section_animation', array( 'label' => esc_html__( 'Animazioni', 'lu3g-mobile-menu' ) ) );
@@ -461,15 +553,16 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				'cubic-bezier(.34,1.56,.64,1)' => esc_html__( 'Elastico (back)', 'lu3g-mobile-menu' ),
 				'custom'                       => esc_html__( 'Personalizzato', 'lu3g-mobile-menu' ),
 			),
-			'selectors' => array( '{{WRAPPER}}' => '--lu3g-mm-ease: {{VALUE}};' ),
-			'condition' => array( 'easing!' => 'custom' ),
+			// "Personalizzato" usa il valore del campo qui sotto (variabile separata, così la tendina resta sempre visibile)
+			'selectors_dictionary' => array( 'custom' => 'var(--lu3g-mm-ease-custom, ease)' ),
+			'selectors'            => array( '{{WRAPPER}}' => '--lu3g-mm-ease: {{VALUE}};' ),
 		) );
 
 		$this->add_control( 'easing_custom', array(
 			'label'       => esc_html__( 'Easing personalizzato', 'lu3g-mobile-menu' ),
 			'type'        => Controls_Manager::TEXT,
 			'placeholder' => 'cubic-bezier(.5,0,.2,1)',
-			'selectors'   => array( '{{WRAPPER}}' => '--lu3g-mm-ease: {{VALUE}};' ),
+			'selectors'   => array( '{{WRAPPER}}' => '--lu3g-mm-ease-custom: {{VALUE}};' ),
 			'condition'   => array( 'easing' => 'custom' ),
 		) );
 
@@ -583,12 +676,15 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'tab'   => Controls_Manager::TAB_STYLE,
 		) );
 
+		$bars = array( 'toggle_icon_type' => 'bars' );
+
 		$this->add_responsive_control( 'bar_width', array(
 			'label'      => esc_html__( 'Dimensione', 'lu3g-mobile-menu' ),
 			'type'       => Controls_Manager::SLIDER,
 			'size_units' => array( 'px' ),
 			'range'      => array( 'px' => array( 'min' => 12, 'max' => 80 ) ),
 			'selectors'  => array( '{{WRAPPER}} .lu3g-mm' => '--lu3g-mm-bar-w: {{SIZE}}{{UNIT}};' ),
+			'condition'  => $bars,
 		) );
 
 		$this->add_responsive_control( 'bar_thickness', array(
@@ -597,6 +693,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'size_units' => array( 'px' ),
 			'range'      => array( 'px' => array( 'min' => 1, 'max' => 10 ) ),
 			'selectors'  => array( '{{WRAPPER}} .lu3g-mm' => '--lu3g-mm-bar-h: {{SIZE}}{{UNIT}};' ),
+			'condition'  => $bars,
 		) );
 
 		$this->add_responsive_control( 'bar_gap', array(
@@ -605,6 +702,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'size_units' => array( 'px' ),
 			'range'      => array( 'px' => array( 'min' => 1, 'max' => 20 ) ),
 			'selectors'  => array( '{{WRAPPER}} .lu3g-mm' => '--lu3g-mm-bar-gap: {{SIZE}}{{UNIT}};' ),
+			'condition'  => $bars,
 		) );
 
 		$this->add_control( 'bar_radius', array(
@@ -613,7 +711,19 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'size_units' => array( 'px' ),
 			'range'      => array( 'px' => array( 'min' => 0, 'max' => 10 ) ),
 			'selectors'  => array( '{{WRAPPER}} .lu3g-mm' => '--lu3g-mm-bar-r: {{SIZE}}{{UNIT}};' ),
+			'condition'  => $bars,
 		) );
+
+		$this->add_responsive_control( 'toggle_icon_size', array(
+			'label'      => esc_html__( 'Dimensione', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 12, 'max' => 120 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__icon' => 'font-size: {{SIZE}}{{UNIT}};' ),
+			'condition'  => array( 'toggle_icon_type' => 'icon' ),
+		) );
+
+		$this->svg_recolor_control( 'toggle_svg_recolor', '{{WRAPPER}} .lu3g-mm__icon', array( 'toggle_icon_type' => 'icon' ) );
 
 		$this->start_controls_tabs( 'toggle_tabs' );
 		foreach ( array(
@@ -715,6 +825,8 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'selectors' => array( '{{WRAPPER}} .lu3g-mm__close' => 'background-color: {{VALUE}};' ),
 		) );
 
+		$this->svg_recolor_control( 'close_svg_recolor', '{{WRAPPER}} .lu3g-mm__close', array() );
+
 		$this->add_control( 'close_align', array(
 			'label'     => esc_html__( 'Allineamento', 'lu3g-mobile-menu' ),
 			'type'      => Controls_Manager::CHOOSE,
@@ -727,6 +839,59 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		) );
 
 		$this->end_controls_section();
+	}
+
+	/* ----------------------------------------------------------------------------------------- Stile: logo */
+	private function style_logo() {
+		$this->start_controls_section( 'style_logo', array(
+			'label'     => esc_html__( 'Logo', 'lu3g-mobile-menu' ),
+			'tab'       => Controls_Manager::TAB_STYLE,
+			'condition' => array( 'show_logo' => 'yes' ),
+		) );
+
+		$this->add_responsive_control( 'logo_width', array(
+			'label'      => esc_html__( 'Larghezza', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 30, 'max' => 400 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__logo img, {{WRAPPER}} .lu3g-mm__logo svg' => 'width: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'logo_max_height', array(
+			'label'      => esc_html__( 'Altezza massima', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 20, 'max' => 200 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__logo img, {{WRAPPER}} .lu3g-mm__logo svg' => 'max-height: {{SIZE}}{{UNIT}}; width: auto; max-width: 100%;' ),
+		) );
+
+		$this->add_responsive_control( 'head_spacing', array(
+			'label'      => esc_html__( 'Distanza dalle voci', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 100 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mm__head' => 'margin-bottom: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->end_controls_section();
+	}
+
+	/**
+	 * Interruttore che colora l'SVG caricato con il colore scelto nello stile (fill e stroke diventano currentColor).
+	 * Le parti con fill="none" o stroke="none" restano trasparenti.
+	 */
+	private function svg_recolor_control( $id, $scope, array $condition ) {
+		$this->add_control( $id, array(
+			'label'        => esc_html__( 'Colora l\'SVG con il colore scelto', 'lu3g-mobile-menu' ),
+			'type'         => Controls_Manager::SWITCHER,
+			'default'      => 'yes',
+			'description'  => esc_html__( 'Disattiva per mantenere i colori originali di un SVG caricato.', 'lu3g-mobile-menu' ),
+			'selectors'    => array(
+				$scope . ' svg[fill]:not([fill="none"]), ' . $scope . ' svg [fill]:not([fill="none"])'         => 'fill: currentColor;',
+				$scope . ' svg[stroke]:not([stroke="none"]), ' . $scope . ' svg [stroke]:not([stroke="none"])' => 'stroke: currentColor;',
+			),
+			'condition'    => $condition,
+		) );
 	}
 
 	/* ------------------------------------------------------------------------------------- Stile: pannello */
@@ -768,6 +933,13 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'type'        => Controls_Manager::COLOR,
 			'description' => esc_html__( 'Colore di base di tutto il pannello; le sezioni sotto lo possono cambiare.', 'lu3g-mobile-menu' ),
 			'selectors'   => array( '{{WRAPPER}} .lu3g-mm__panel' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'focus_color', array(
+			'label'       => esc_html__( 'Colore del contorno di focus', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::COLOR,
+			'description' => esc_html__( 'Compare solo navigando con la tastiera, non al tocco o al click.', 'lu3g-mobile-menu' ),
+			'selectors'   => array( '{{WRAPPER}}' => '--lu3g-mm-focus: {{VALUE}};' ),
 		) );
 
 		$this->add_group_control( Group_Control_Box_Shadow::get_type(), array(
@@ -1266,7 +1438,9 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$breakpoint = isset( $this->s['breakpoint'] ) ? absint( $this->s['breakpoint'] ) : 0;
 		$panel_anim = $this->pick( 'panel_animation', array( 'slide-left', 'slide-right', 'slide-top', 'fade', 'fullscreen' ), 'slide-left' );
 		$items_anim = $this->pick( 'items_animation', array( 'none', 'fade', 'slide-up', 'slide-side', 'zoom' ), 'slide-up' );
-		$toggle_fx  = $this->pick( 'toggle_animation', array( 'x', 'squeeze', 'spin', 'arrow', 'minus', 'none' ), 'squeeze' );
+		$toggle_fx  = 'icon' === $this->pick( 'toggle_icon_type', array( 'bars', 'icon' ), 'bars' )
+			? 'icon'
+			: $this->pick( 'toggle_animation', array( 'x', 'squeeze', 'spin', 'arrow', 'minus', 'none' ), 'squeeze' );
 		$label      = isset( $this->s['toggle_label'] ) ? trim( (string) $this->s['toggle_label'] ) : '';
 
 		// opzioni lette dal JavaScript
@@ -1305,7 +1479,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				<?php if ( '' !== $label && 'left' === $this->s['toggle_label_position'] ) : ?>
 					<span class="lu3g-mm__label"><?php echo esc_html( $label ); ?></span>
 				<?php endif; ?>
-				<span class="lu3g-mm__bars" aria-hidden="true"><span></span><span></span><span></span></span>
+				<?php $this->render_toggle_icon( $toggle_fx ); ?>
 				<?php if ( '' !== $label && 'left' !== $this->s['toggle_label_position'] ) : ?>
 					<span class="lu3g-mm__label"><?php echo esc_html( $label ); ?></span>
 				<?php endif; ?>
@@ -1313,8 +1487,9 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 
 			<div class="<?php echo esc_attr( implode( ' ', $layer_class ) ); ?>" data-animation="<?php echo esc_attr( $panel_anim ); ?>" data-side="<?php echo esc_attr( $this->pick( 'panel_side', array( 'left', 'right' ), 'left' ) ); ?>"<?php echo 'none' !== $items_anim ? ' data-items="' . esc_attr( $items_anim ) . '"' : ''; ?>>
 				<div class="lu3g-mm__overlay" aria-hidden="true"></div>
-				<div class="lu3g-mm__panel" id="<?php echo esc_attr( $panel_id ); ?>" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $this->s['panel_label'] ? $this->s['panel_label'] : __( 'Menu di navigazione', 'lu3g-mobile-menu' ) ); ?>" inert>
+				<div class="lu3g-mm__panel" id="<?php echo esc_attr( $panel_id ); ?>" role="dialog" aria-modal="true" aria-label="<?php echo esc_attr( $this->s['panel_label'] ? $this->s['panel_label'] : __( 'Menu di navigazione', 'lu3g-mobile-menu' ) ); ?>" tabindex="-1" inert>
 					<div class="lu3g-mm__head">
+						<?php $this->render_logo(); ?>
 						<button type="button" class="lu3g-mm__close<?php echo $this->yes( 'show_close' ) ? '' : ' lu3g-mm__close--sr'; ?>" aria-label="<?php echo esc_attr( $this->s['close_label'] ? $this->s['close_label'] : __( 'Chiudi il menu', 'lu3g-mobile-menu' ) ); ?>">
 							<?php $this->render_close_icon(); ?>
 						</button>
@@ -1335,6 +1510,71 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			</div>
 		</div>
 		<?php
+	}
+
+	/** Linee animate oppure icona/SVG scelti nel widget (due icone sovrapposte: chiuso e aperto). */
+	private function render_toggle_icon( $type ) {
+		if ( 'icon' !== $type ) {
+			echo '<span class="lu3g-mm__bars" aria-hidden="true"><span></span><span></span><span></span></span>';
+			return;
+		}
+
+		$closed = $this->icon_html( isset( $this->s['toggle_icon'] ) ? $this->s['toggle_icon'] : array() );
+		if ( '' === $closed ) {
+			$closed = $this->icon_html( array( 'value' => 'fas fa-bars', 'library' => 'fa-solid' ) );
+		}
+		$open   = $this->icon_html( isset( $this->s['toggle_icon_open'] ) ? $this->s['toggle_icon_open'] : array() );
+		$effect = $this->pick( 'toggle_icon_effect', array( 'rotate', 'fade', 'none' ), 'rotate' );
+
+		printf(
+			'<span class="lu3g-mm__icon lu3g-mm__icon--%1$s%2$s" aria-hidden="true"><span class="lu3g-mm__icon-closed">%3$s</span>%4$s</span>',
+			esc_attr( $effect ),
+			'' === $open ? ' lu3g-mm__icon--single' : '',
+			$closed, // phpcs:ignore WordPress.Security.EscapeOutput -- HTML di Icons_Manager
+			'' === $open ? '' : '<span class="lu3g-mm__icon-open">' . $open . '</span>' // phpcs:ignore WordPress.Security.EscapeOutput
+		);
+	}
+
+	/** Logo del sito o immagine caricata, con link alla home nella lingua corrente. */
+	private function render_logo() {
+		if ( ! $this->yes( 'show_logo' ) ) {
+			return;
+		}
+
+		$id  = 0;
+		$url = '';
+		if ( 'custom' === $this->s['logo_source'] ) {
+			$id  = isset( $this->s['logo_image']['id'] ) ? (int) $this->s['logo_image']['id'] : 0;
+			$url = isset( $this->s['logo_image']['url'] ) ? $this->s['logo_image']['url'] : '';
+		} else {
+			$id = (int) get_theme_mod( 'custom_logo' );
+		}
+
+		$name = get_bloginfo( 'name' );
+		$alt  = $id ? trim( (string) get_post_meta( $id, '_wp_attachment_image_alt', true ) ) : '';
+		$alt  = '' !== $alt ? $alt : $name;
+
+		if ( $id && wp_attachment_is_image( $id ) ) {
+			$img = wp_get_attachment_image( $id, 'medium', false, array( 'class' => 'lu3g-mm__logo-img', 'alt' => $alt, 'loading' => 'lazy' ) );
+		} elseif ( $url ) {
+			$img = '<img class="lu3g-mm__logo-img" src="' . esc_url( $url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy">';
+		} else {
+			if ( $this->is_edit_mode() ) {
+				echo '<span class="lu3g-mm__logo lu3g-mm__notice">' . esc_html__( 'Nessun logo: impostalo nel sito o carica un\'immagine.', 'lu3g-mobile-menu' ) . '</span>';
+			}
+			return;
+		}
+
+		if ( $this->yes( 'logo_link' ) ) {
+			if ( function_exists( 'pll_home_url' ) ) {
+				$home = pll_home_url();
+			} else {
+				$home = apply_filters( 'wpml_home_url', home_url( '/' ) );
+			}
+			echo '<a class="lu3g-mm__logo" href="' . esc_url( $home ) . '">' . $img . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput -- immagine da wp_get_attachment_image o già escapata
+		} else {
+			echo '<span class="lu3g-mm__logo">' . $img . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput
+		}
 	}
 
 	private function render_close_icon() {

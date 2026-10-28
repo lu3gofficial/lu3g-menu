@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       LU3G Mobile Menu
  * Description:       Widget Elementor con menu hamburger per mobile: voci dal menu di WordPress con sottomenu su più livelli, voci extra (link, contatti, social, CTA), animazioni configurabili, accessibile, compatibile con WPML e Polylang.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Plugin URI:        https://github.com/lu3gofficial/lu3g-mobile-menu
  * Update URI:        https://github.com/lu3gofficial/lu3g-mobile-menu
  * Author:            LU3G Agenzia Web
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LU3G_MM_VERSION', '1.0.0' );
+define( 'LU3G_MM_VERSION', '1.0.1' );
 define( 'LU3G_MM_FILE', __FILE__ );
 define( 'LU3G_MM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LU3G_MM_URL', plugin_dir_url( __FILE__ ) );
