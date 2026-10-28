@@ -1,0 +1,713 @@
+/**
+ * LU3G Mobile Menu — stili del widget.
+ *
+ * I valori configurabili da Elementor arrivano come variabili CSS impostate sul contenitore del widget
+ * (--lu3g-mm-dur, --lu3g-mm-ease, --lu3g-mm-bar-w, ...): qui si usano sempre con un valore di riserva,
+ * senza ridichiararle, altrimenti coprirebbero quelle di Elementor.
+ * Tutte le transizioni stanno dentro "prefers-reduced-motion: no-preference": chi ha chiesto meno movimento
+ * vede il menu aprirsi e chiudersi senza animazioni.
+ */
+
+.lu3g-mm,
+.lu3g-mm__layer {
+	--lu3g-mm-d: var(--lu3g-mm-dur, 450ms);
+	--lu3g-mm-e: var(--lu3g-mm-ease, cubic-bezier(.77, 0, .18, 1));
+}
+
+.lu3g-mm {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+}
+
+/* Testo nascosto ma letto dagli screen reader */
+.lu3g-mm__close--sr:not(:focus):not(:focus-visible) {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	white-space: nowrap !important;
+	border: 0 !important;
+}
+
+/* =========================================================================================== Hamburger */
+
+/* i temi (es. Hello Elementor) danno ai <button> bordi, colori e sfondi in hover: qui si azzerano */
+.lu3g-mm .lu3g-mm__toggle,
+.lu3g-mm .lu3g-mm__toggle:hover,
+.lu3g-mm .lu3g-mm__toggle:focus {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin: 0;
+	padding: 8px;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	color: #1a1a1a;
+	font: inherit;
+	line-height: 1;
+	text-transform: none;
+	letter-spacing: normal;
+	cursor: pointer;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.lu3g-mm__label {
+	font-size: 15px;
+	font-weight: 600;
+}
+
+.lu3g-mm__bars {
+	position: relative;
+	display: block;
+	flex: none;
+	width: var(--lu3g-mm-bar-w, 28px);
+	height: calc(var(--lu3g-mm-bar-h, 2px) * 3 + var(--lu3g-mm-bar-gap, 6px) * 2);
+}
+
+.lu3g-mm__bars > span {
+	position: absolute;
+	left: 0;
+	display: block;
+	width: 100%;
+	height: var(--lu3g-mm-bar-h, 2px);
+	border-radius: var(--lu3g-mm-bar-r, 2px);
+	background: currentColor;
+	transform-origin: center;
+}
+
+.lu3g-mm__bars > span:nth-child(1) { top: 0; }
+.lu3g-mm__bars > span:nth-child(2) { top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2); }
+.lu3g-mm__bars > span:nth-child(3) { top: calc(100% - var(--lu3g-mm-bar-h, 2px)); }
+
+/* X (anche a due tempi e con rotazione) */
+.lu3g-mm.is-open .lu3g-mm__toggle--x .lu3g-mm__bars > span:nth-child(1),
+.lu3g-mm.is-open .lu3g-mm__toggle--squeeze .lu3g-mm__bars > span:nth-child(1),
+.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars > span:nth-child(1) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	transform: rotate(45deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--x .lu3g-mm__bars > span:nth-child(3),
+.lu3g-mm.is-open .lu3g-mm__toggle--squeeze .lu3g-mm__bars > span:nth-child(3),
+.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars > span:nth-child(3) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	transform: rotate(-45deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--x .lu3g-mm__bars > span:nth-child(2),
+.lu3g-mm.is-open .lu3g-mm__toggle--squeeze .lu3g-mm__bars > span:nth-child(2),
+.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars > span:nth-child(2) {
+	opacity: 0;
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--spin .lu3g-mm__bars {
+	transform: rotate(180deg);
+}
+
+/* Freccia verso sinistra: le linee esterne ruotano attorno all'estremo sinistro */
+.lu3g-mm__toggle--arrow .lu3g-mm__bars > span:nth-child(1),
+.lu3g-mm__toggle--arrow .lu3g-mm__bars > span:nth-child(3) {
+	transform-origin: calc(var(--lu3g-mm-bar-h, 2px) / 2) center;
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--arrow .lu3g-mm__bars > span:nth-child(1) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	width: 55%;
+	transform: rotate(-42deg);
+}
+
+.lu3g-mm.is-open .lu3g-mm__toggle--arrow .lu3g-mm__bars > span:nth-child(3) {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+	width: 55%;
+	transform: rotate(42deg);
+}
+
+/* Linea unica */
+.lu3g-mm.is-open .lu3g-mm__toggle--minus .lu3g-mm__bars > span {
+	top: calc(50% - var(--lu3g-mm-bar-h, 2px) / 2);
+}
+
+/* =========================================================================================== Livello */
+
+/* overlay + pannello, fissi sullo schermo; nascosti finché il JS non aggiunge .is-visible */
+.lu3g-mm__layer {
+	position: fixed;
+	inset: 0;
+	z-index: 9999;
+	visibility: hidden;
+	pointer-events: none;
+}
+
+.lu3g-mm__layer.is-visible {
+	visibility: visible;
+}
+
+.lu3g-mm__layer.is-open {
+	pointer-events: auto;
+}
+
+.lu3g-mm__overlay {
+	position: absolute;
+	inset: 0;
+	background-color: #000;
+	opacity: 0;
+}
+
+.lu3g-mm__layer.is-open .lu3g-mm__overlay {
+	opacity: var(--lu3g-mm-ov-op, .5);
+}
+
+/* Il contenitore che il JS crea in fondo al <body> porta le classi del widget (per gli stili di Elementor):
+   qui si annulla tutto ciò che potrebbe spostarlo o rompere il position: fixed del pannello */
+.lu3g-mm-portal,
+.lu3g-mm-portal > .elementor-element {
+	position: static !important;
+	width: auto !important;
+	height: auto !important;
+	margin: 0 !important;
+	padding: 0 !important;
+	border: 0 !important;
+	background: none !important;
+	box-shadow: none !important;
+	transform: none !important;
+	filter: none !important;
+	-webkit-backdrop-filter: none !important;
+	backdrop-filter: none !important;
+	perspective: none !important;
+	contain: none !important;
+	will-change: auto !important;
+	animation: none !important;
+}
+
+/* =========================================================================================== Pannello */
+
+.lu3g-mm__panel {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	width: 85vw;
+	max-width: 380px;
+	padding: 16px 24px 32px;
+	overflow-x: hidden;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+	background-color: #fff;
+	color: #1a1a1a;
+	text-align: left;
+}
+
+.lu3g-mm__layer[data-animation="slide-left"] .lu3g-mm__panel {
+	transform: translateX(-100%);
+}
+
+.lu3g-mm__layer[data-animation="slide-right"] .lu3g-mm__panel {
+	left: auto;
+	right: 0;
+	transform: translateX(100%);
+}
+
+.lu3g-mm__layer[data-animation="slide-top"] .lu3g-mm__panel {
+	right: 0;
+	bottom: auto;
+	width: 100%;
+	max-width: none;
+	max-height: 100%;
+	transform: translateY(-100%);
+}
+
+.lu3g-mm__layer[data-animation="fade"] .lu3g-mm__panel {
+	opacity: 0;
+}
+
+.lu3g-mm__layer[data-animation="fade"][data-side="right"] .lu3g-mm__panel {
+	left: auto;
+	right: 0;
+}
+
+.lu3g-mm__layer[data-animation="fullscreen"] .lu3g-mm__panel {
+	right: 0;
+	width: 100%;
+	max-width: none;
+	opacity: 0;
+	transform: scale(1.04);
+}
+
+.lu3g-mm__layer.is-open .lu3g-mm__panel {
+	opacity: 1;
+	transform: none;
+}
+
+/* schermo intero: contenuto centrato in verticale (resta scorrevole se è più alto dello schermo) */
+.lu3g-mm__layer--center .lu3g-mm__body {
+	margin-top: auto;
+	margin-bottom: auto;
+}
+
+.lu3g-mm__head {
+	display: flex;
+	flex: none;
+	justify-content: flex-end;
+	margin-bottom: 8px;
+}
+
+.lu3g-mm__layer .lu3g-mm__close,
+.lu3g-mm__layer .lu3g-mm__close:hover,
+.lu3g-mm__layer .lu3g-mm__close:focus {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 50%;
+	background: transparent;
+	box-shadow: none;
+	color: inherit;
+	font-size: 22px;
+	line-height: 1;
+	cursor: pointer;
+}
+
+.lu3g-mm__close svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.lu3g-mm__close svg path[stroke] {
+	fill: none;
+}
+
+.lu3g-mm__notice {
+	margin: 0;
+	padding: 12px;
+	border: 1px dashed currentColor;
+	font-size: 14px;
+	opacity: .7;
+}
+
+/* =========================================================================================== Voci */
+
+.lu3g-mm__layer ul.lu3g-mm__menu,
+.lu3g-mm__layer ul.lu3g-mm__sub,
+.lu3g-mm__layer ul.lu3g-mm__contacts,
+.lu3g-mm__layer ul.lu3g-mm__social {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lu3g-mm__layer .lu3g-mm__item {
+	margin: 0;
+	padding: 0;
+}
+
+.lu3g-mm__layer .lu3g-mm__item::before,
+.lu3g-mm__layer .lu3g-mm__item::marker {
+	content: none;
+}
+
+.lu3g-mm__menu {
+	display: flex;
+	flex-direction: column;
+}
+
+.lu3g-mm__row {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.lu3g-mm__layer .lu3g-mm__link,
+.lu3g-mm__layer button.lu3g-mm__link:hover,
+.lu3g-mm__layer button.lu3g-mm__link:focus {
+	display: flex;
+	flex: 1 1 auto;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 10px;
+	min-width: 0;
+	margin: 0;
+	padding: 12px 0;
+	border: 0;
+	background-color: transparent;
+	box-shadow: none;
+	color: inherit;
+	font-family: inherit;
+	font-size: 18px;
+	font-weight: 500;
+	line-height: 1.3;
+	text-align: left;
+	text-decoration: none;
+	text-transform: none;
+	letter-spacing: normal;
+	cursor: pointer;
+}
+
+/* voce senza link che apre il sottomenu: testo a sinistra, icona in fondo allineata a quelle dei pulsanti */
+.lu3g-mm__layer .lu3g-mm__link--parent {
+	padding-right: 0;
+}
+
+.lu3g-mm__layer .lu3g-mm__link--parent .lu3g-mm__sub-toggle {
+	height: auto;
+	margin-left: auto;
+}
+
+.lu3g-mm__layer .lu3g-mm__sub .lu3g-mm__link {
+	padding: 9px 0;
+	font-size: 16px;
+	font-weight: 400;
+}
+
+/* pagina corrente: sottolineata finché non si sceglie un colore "Attivo" nello stile */
+.lu3g-mm__item.is-current > .lu3g-mm__row > .lu3g-mm__link .lu3g-mm__text {
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
+	text-underline-offset: .3em;
+}
+
+.lu3g-mm__link-icon {
+	display: inline-flex;
+	flex: none;
+}
+
+.lu3g-mm__link-icon svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+/* ------------------------------------------------------------------------- Pulsante e icona sottomenu */
+
+.lu3g-mm__layer .lu3g-mm__sub-toggle,
+.lu3g-mm__layer .lu3g-mm__sub-toggle:hover,
+.lu3g-mm__layer .lu3g-mm__sub-toggle:focus {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background-color: transparent;
+	box-shadow: none;
+	color: inherit;
+	cursor: pointer;
+}
+
+.lu3g-mm__sub-icon {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	font-size: 16px;
+	line-height: 1;
+}
+
+.lu3g-mm__sub-icon svg {
+	width: 100%;
+	height: 100%;
+}
+
+.lu3g-mm__sub-icon--custom svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+[aria-expanded="true"] .lu3g-mm__sub-icon--chevron,
+[aria-expanded="true"] .lu3g-mm__sub-icon--caret {
+	transform: rotate(180deg);
+}
+
+[aria-expanded="true"] .lu3g-mm__sub-icon--chevron-right {
+	transform: rotate(90deg);
+}
+
+/* più / meno: due linee disegnate in CSS */
+.lu3g-mm__sub-icon--plus::before,
+.lu3g-mm__sub-icon--plus::after {
+	content: "";
+	position: absolute;
+	top: calc(50% - 1px);
+	left: 0;
+	width: 100%;
+	height: 2px;
+	border-radius: 1px;
+	background: currentColor;
+}
+
+.lu3g-mm__sub-icon--plus::after {
+	transform: rotate(90deg);
+}
+
+[aria-expanded="true"] .lu3g-mm__sub-icon--plus::after {
+	transform: rotate(180deg);
+}
+
+.lu3g-mm__sub-icon-open,
+[aria-expanded="true"] .lu3g-mm__sub-icon--custom .lu3g-mm__sub-icon-closed {
+	display: none;
+}
+
+.lu3g-mm__sub-icon-closed,
+[aria-expanded="true"] .lu3g-mm__sub-icon--custom .lu3g-mm__sub-icon-open {
+	display: inline-flex;
+}
+
+/* ---------------------------------------------------------------------------------------- Sottomenu */
+
+/* chiuso = riga della griglia alta 0; visibility toglie le voci nascoste dal giro del tasto Tab */
+.lu3g-mm__sub-wrap {
+	display: grid;
+	grid-template-rows: 0fr;
+	visibility: hidden;
+}
+
+.lu3g-mm__item.is-sub-open > .lu3g-mm__sub-wrap {
+	grid-template-rows: 1fr;
+	visibility: visible;
+}
+
+.lu3g-mm__layer ul.lu3g-mm__sub {
+	min-height: 0;
+	overflow: hidden;
+	padding-left: 16px;
+}
+
+/* ======================================================================================== Voci extra */
+
+.lu3g-mm__extras {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.lu3g-mm__extras--before {
+	margin-bottom: 24px;
+}
+
+.lu3g-mm__extras--after {
+	margin-top: 28px;
+}
+
+/* senza menu (solo voci extra) niente distanza */
+.lu3g-mm__body > .lu3g-mm__extras:first-child {
+	margin-top: 0;
+}
+
+.lu3g-mm__body > .lu3g-mm__extras:last-child {
+	margin-bottom: 0;
+}
+
+.lu3g-mm__contacts {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+}
+
+.lu3g-mm__contact {
+	font-size: 16px;
+	line-height: 1.4;
+}
+
+.lu3g-mm__layer .lu3g-mm__contact-link,
+.lu3g-mm__contact-text-only {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	color: inherit;
+	text-decoration: none;
+}
+
+.lu3g-mm__contact-icon {
+	display: inline-flex;
+	flex: none;
+	align-items: center;
+	justify-content: center;
+	width: 1.2em;
+	font-size: 18px;
+}
+
+.lu3g-mm__contact-icon svg,
+.lu3g-mm__social-link svg,
+.lu3g-mm__cta-icon svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+.lu3g-mm__social {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.lu3g-mm__layer .lu3g-mm__social-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 42px;
+	height: 42px;
+	border-radius: 50%;
+	background-color: rgba(0, 0, 0, .06);
+	color: inherit;
+	font-size: 18px;
+	text-decoration: none;
+}
+
+.lu3g-mm__cta-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+}
+
+.lu3g-mm__layer .lu3g-mm__cta {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	box-sizing: border-box;
+	padding: 14px 24px;
+	border: 0 solid transparent;
+	border-radius: 6px;
+	background-color: #1a1a1a;
+	color: #fff;
+	font-size: 16px;
+	font-weight: 600;
+	line-height: 1.2;
+	text-align: center;
+	text-decoration: none;
+}
+
+/* ============================================================================================= Focus */
+
+.lu3g-mm__toggle:focus-visible,
+.lu3g-mm__layer :focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+
+/* ====================================================================================== Blocco scroll */
+
+html.lu3g-mm-locked,
+html.lu3g-mm-locked body {
+	overflow: hidden !important;
+}
+
+html.lu3g-mm-locked body {
+	padding-right: var(--lu3g-mm-scrollbar, 0px);
+}
+
+/* ========================================================================================= Animazioni */
+
+@media (prefers-reduced-motion: no-preference) {
+
+	/* hamburger */
+	.lu3g-mm__toggle {
+		transition: color var(--lu3g-mm-d) var(--lu3g-mm-e), background-color var(--lu3g-mm-d) var(--lu3g-mm-e);
+	}
+
+	.lu3g-mm__bars,
+	.lu3g-mm__bars > span {
+		transition:
+			top var(--lu3g-mm-d) var(--lu3g-mm-e),
+			width var(--lu3g-mm-d) var(--lu3g-mm-e),
+			transform var(--lu3g-mm-d) var(--lu3g-mm-e),
+			opacity var(--lu3g-mm-d) var(--lu3g-mm-e);
+	}
+
+	/* a due tempi: in apertura prima si avvicinano poi ruotano, in chiusura l'inverso */
+	.lu3g-mm__toggle--squeeze .lu3g-mm__bars > span {
+		transition:
+			top calc(var(--lu3g-mm-d) / 2) var(--lu3g-mm-e) calc(var(--lu3g-mm-d) / 2),
+			transform calc(var(--lu3g-mm-d) / 2) var(--lu3g-mm-e) 0s,
+			opacity 0s linear calc(var(--lu3g-mm-d) / 2);
+	}
+
+	.lu3g-mm.is-open .lu3g-mm__toggle--squeeze .lu3g-mm__bars > span {
+		transition:
+			top calc(var(--lu3g-mm-d) / 2) var(--lu3g-mm-e) 0s,
+			transform calc(var(--lu3g-mm-d) / 2) var(--lu3g-mm-e) calc(var(--lu3g-mm-d) / 2),
+			opacity 0s linear calc(var(--lu3g-mm-d) / 2);
+	}
+
+	/* pannello e overlay */
+	.lu3g-mm__panel {
+		transition: transform var(--lu3g-mm-d) var(--lu3g-mm-e), opacity var(--lu3g-mm-d) var(--lu3g-mm-e);
+	}
+
+	.lu3g-mm__overlay {
+		transition: opacity var(--lu3g-mm-d) var(--lu3g-mm-e);
+	}
+
+	/* sottomenu */
+	.lu3g-mm__sub-wrap {
+		transition:
+			grid-template-rows var(--lu3g-mm-sub-dur, 300ms) var(--lu3g-mm-e),
+			visibility 0s linear var(--lu3g-mm-sub-dur, 300ms);
+	}
+
+	.lu3g-mm__item.is-sub-open > .lu3g-mm__sub-wrap {
+		transition:
+			grid-template-rows var(--lu3g-mm-sub-dur, 300ms) var(--lu3g-mm-e),
+			visibility 0s linear 0s;
+	}
+
+	.lu3g-mm__sub-icon,
+	.lu3g-mm__sub-icon--plus::after {
+		transition: transform var(--lu3g-mm-sub-dur, 300ms) var(--lu3g-mm-e);
+	}
+
+	/* ingresso delle voci, una dopo l'altra (--i = posizione della voce, scritta dal PHP) */
+	.lu3g-mm__layer[data-items] .lu3g-mm__anim {
+		opacity: 0;
+		transition:
+			opacity calc(var(--lu3g-mm-d) * .8) var(--lu3g-mm-e),
+			transform calc(var(--lu3g-mm-d) * .8) var(--lu3g-mm-e);
+	}
+
+	.lu3g-mm__layer[data-items="slide-up"] .lu3g-mm__anim {
+		transform: translateY(18px);
+	}
+
+	.lu3g-mm__layer[data-items="slide-side"] .lu3g-mm__anim {
+		transform: translateX(-28px);
+	}
+
+	.lu3g-mm__layer[data-items="slide-side"][data-animation="slide-right"] .lu3g-mm__anim,
+	.lu3g-mm__layer[data-items="slide-side"][data-side="right"][data-animation="fade"] .lu3g-mm__anim {
+		transform: translateX(28px);
+	}
+
+	.lu3g-mm__layer[data-items="zoom"] .lu3g-mm__anim {
+		transform: scale(.9);
+	}
+
+	.lu3g-mm__layer[data-items].is-open .lu3g-mm__anim {
+		opacity: 1;
+		transform: none;
+		transition-delay: calc(var(--lu3g-mm-d) * .35 + var(--i, 0) * var(--lu3g-mm-stagger, 50ms));
+	}
+}
