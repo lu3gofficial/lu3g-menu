@@ -20,11 +20,11 @@ class LU3G_Mobile_Menu_WPML_Extras extends WPML_Elementor_Module_With_Items {
 
 	protected function get_title( $field ) {
 		$titles = array(
-			'label'            => 'Menu mobile: testo della voce extra',
-			'phone'            => 'Menu mobile: telefono',
-			'email'            => 'Menu mobile: email',
-			'whatsapp_message' => 'Menu mobile: messaggio WhatsApp',
-			'url'              => 'Menu mobile: link della voce extra',
+			'label'            => 'Menu LU3G: testo della voce extra',
+			'phone'            => 'Menu LU3G: telefono',
+			'email'            => 'Menu LU3G: email',
+			'whatsapp_message' => 'Menu LU3G: messaggio WhatsApp',
+			'url'              => 'Menu LU3G: link della voce extra',
 		);
 		return isset( $titles[ $field ] ) ? $titles[ $field ] : '';
 	}

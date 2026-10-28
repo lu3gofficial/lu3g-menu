@@ -1,6 +1,6 @@
 <?php
 /**
- * Widget Elementor "Menu mobile LU3G".
+ * Widget Elementor "Menu LU3G" (nome interno lu3g-mobile-menu, invariato: i widget già inseriti nelle pagine restano validi).
  *
  * Struttura dell'HTML prodotto:
  *   .lu3g-mm                       radice (pulsante hamburger + livello del pannello)
@@ -47,13 +47,17 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 	private $current_url = '';
 	/** Sottomenu a slide (true) o a espansione (false). */
 	private $slide = false;
+	/** Menu letto una volta per rendering (pannello mobile e barra desktop): array o false. */
+	private $menu_data = null;
+	/** Indicatore delle tendine della barra desktop (HTML). */
+	private $bar_indicator_html = '';
 
 	public function get_name() {
 		return 'lu3g-mobile-menu';
 	}
 
 	public function get_title() {
-		return esc_html__( 'Menu mobile LU3G', 'lu3g-mobile-menu' );
+		return esc_html__( 'Menu LU3G', 'lu3g-mobile-menu' );
 	}
 
 	public function get_icon() {
@@ -65,7 +69,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 	}
 
 	public function get_keywords() {
-		return array( 'menu', 'hamburger', 'mobile', 'nav', 'navigazione', 'lu3g' );
+		return array( 'menu', 'hamburger', 'mobile', 'desktop', 'mega menu', 'nav', 'navigazione', 'lu3g' );
 	}
 
 	public function get_style_depends() {
@@ -82,6 +86,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 
 	protected function register_controls() {
 		$this->controls_menu();
+		$this->controls_desktop();
 		$this->controls_extras();
 		$this->controls_toggle();
 		$this->controls_panel();
@@ -98,6 +103,10 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$this->style_submenu();
 		$this->style_slide();
 		$this->style_extras();
+		$this->style_bar();
+		$this->style_dropdown();
+		$this->style_mega();
+		$this->style_bar_extras();
 	}
 
 	/** Menu di WordPress registrati (Aspetto → Menu). */
@@ -248,6 +257,199 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$this->end_controls_section();
 	}
 
+	/* -------------------------------------------------------------------------------- Contenuto: desktop */
+	private function controls_desktop() {
+		$this->start_controls_section( 'section_desktop', array( 'label' => esc_html__( 'Desktop', 'lu3g-mobile-menu' ) ) );
+
+		$this->add_control( 'desktop_mode', array(
+			'label'       => esc_html__( 'Su desktop', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::SELECT,
+			'default'     => 'hidden',
+			'options'     => array(
+				'hidden'    => esc_html__( 'Nascosto (solo menu mobile)', 'lu3g-mobile-menu' ),
+				'bar'       => esc_html__( 'Barra orizzontale con tendine', 'lu3g-mobile-menu' ),
+				'hamburger' => esc_html__( 'Hamburger anche su desktop', 'lu3g-mobile-menu' ),
+			),
+			'description' => esc_html__( 'Desktop = sopra il breakpoint di Comportamento → Breakpoint mobile. Sotto resta sempre l\'hamburger.', 'lu3g-mobile-menu' ),
+		) );
+
+		$bar = array( 'desktop_mode' => 'bar' );
+
+		$this->add_control( 'desktop_trigger', array(
+			'label'     => esc_html__( 'Apertura delle tendine', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'hover',
+			'options'   => array(
+				'hover' => esc_html__( 'Al passaggio del mouse', 'lu3g-mobile-menu' ),
+				'click' => esc_html__( 'Al click', 'lu3g-mobile-menu' ),
+			),
+			'description' => esc_html__( 'Sui touch (tablet) il primo tocco su una voce con tendina la apre, il secondo segue il link.', 'lu3g-mobile-menu' ),
+			'condition' => $bar,
+		) );
+
+		$this->add_control( 'desktop_close_delay', array(
+			'label'       => esc_html__( 'Ritardo di chiusura (ms)', 'lu3g-mobile-menu' ),
+			'type'        => Controls_Manager::NUMBER,
+			'min'         => 0,
+			'max'         => 1500,
+			'step'        => 50,
+			'default'     => 250,
+			'description' => esc_html__( 'Quanto aspetta la tendina prima di chiudersi quando il mouse esce: evita chiusure accidentali.', 'lu3g-mobile-menu' ),
+			'condition'   => array( 'desktop_mode' => 'bar', 'desktop_trigger' => 'hover' ),
+		) );
+
+		$this->add_control( 'desktop_indicator', array(
+			'label'     => esc_html__( 'Indicatore delle tendine', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'chevron',
+			'options'   => array(
+				'chevron' => esc_html__( 'Freccia', 'lu3g-mobile-menu' ),
+				'caret'   => esc_html__( 'Triangolo', 'lu3g-mobile-menu' ),
+				'plus'    => esc_html__( 'Più', 'lu3g-mobile-menu' ),
+				'none'    => esc_html__( 'Nessuno', 'lu3g-mobile-menu' ),
+			),
+			'condition' => $bar,
+		) );
+
+		$this->add_control( 'desktop_drop_anim', array(
+			'label'     => esc_html__( 'Animazione delle tendine', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'slide-up',
+			'options'   => array(
+				'fade'       => esc_html__( 'Dissolvenza', 'lu3g-mobile-menu' ),
+				'slide-up'   => esc_html__( 'Dal basso', 'lu3g-mobile-menu' ),
+				'slide-down' => esc_html__( 'Dall\'alto', 'lu3g-mobile-menu' ),
+				'zoom'       => esc_html__( 'Zoom', 'lu3g-mobile-menu' ),
+				'flip'       => esc_html__( 'Rotazione 3D', 'lu3g-mobile-menu' ),
+				'none'       => esc_html__( 'Nessuna', 'lu3g-mobile-menu' ),
+			),
+			'condition' => $bar,
+		) );
+
+		$this->add_control( 'desktop_drop_dur', array(
+			'label'     => esc_html__( 'Durata tendine (ms)', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::NUMBER,
+			'min'       => 0,
+			'max'       => 1500,
+			'step'      => 50,
+			'default'   => 250,
+			'selectors' => array( '{{WRAPPER}}' => '--lu3g-mb-dur: {{VALUE}}ms;' ),
+			'condition' => array( 'desktop_mode' => 'bar', 'desktop_drop_anim!' => 'none' ),
+		) );
+
+		$this->add_control( 'pointer', array(
+			'label'     => esc_html__( 'Effetto al passaggio sulle voci', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'underline',
+			'options'   => array(
+				'none'       => esc_html__( 'Nessuno', 'lu3g-mobile-menu' ),
+				'underline'  => esc_html__( 'Linea sotto', 'lu3g-mobile-menu' ),
+				'overline'   => esc_html__( 'Linea sopra', 'lu3g-mobile-menu' ),
+				'double'     => esc_html__( 'Doppia linea', 'lu3g-mobile-menu' ),
+				'framed'     => esc_html__( 'Cornice', 'lu3g-mobile-menu' ),
+				'background' => esc_html__( 'Sfondo', 'lu3g-mobile-menu' ),
+				'text'       => esc_html__( 'Testo', 'lu3g-mobile-menu' ),
+			),
+			'description' => esc_html__( 'Vale anche per la voce della pagina corrente. Colori e spessore in Stile → Barra desktop.', 'lu3g-mobile-menu' ),
+			'separator' => 'before',
+			'condition' => $bar,
+		) );
+
+		$this->add_control( 'pointer_anim_line', array(
+			'label'     => esc_html__( 'Animazione dell\'effetto', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'grow',
+			'options'   => array(
+				'fade'  => esc_html__( 'Dissolvenza', 'lu3g-mobile-menu' ),
+				'grow'  => esc_html__( 'Dal centro', 'lu3g-mobile-menu' ),
+				'slide' => esc_html__( 'Da sinistra', 'lu3g-mobile-menu' ),
+				'drop'  => esc_html__( 'Scende', 'lu3g-mobile-menu' ),
+			),
+			'condition' => array( 'desktop_mode' => 'bar', 'pointer' => array( 'underline', 'overline', 'double' ) ),
+		) );
+
+		$this->add_control( 'pointer_anim_frame', array(
+			'label'     => esc_html__( 'Animazione dell\'effetto', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'fade',
+			'options'   => array(
+				'fade'   => esc_html__( 'Dissolvenza', 'lu3g-mobile-menu' ),
+				'grow'   => esc_html__( 'Si allarga', 'lu3g-mobile-menu' ),
+				'shrink' => esc_html__( 'Si stringe', 'lu3g-mobile-menu' ),
+			),
+			'condition' => array( 'desktop_mode' => 'bar', 'pointer' => 'framed' ),
+		) );
+
+		$this->add_control( 'pointer_anim_bg', array(
+			'label'     => esc_html__( 'Animazione dell\'effetto', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'sweep',
+			'options'   => array(
+				'fade'    => esc_html__( 'Dissolvenza', 'lu3g-mobile-menu' ),
+				'grow'    => esc_html__( 'Si allarga', 'lu3g-mobile-menu' ),
+				'sweep'   => esc_html__( 'Da sinistra', 'lu3g-mobile-menu' ),
+				'rise'    => esc_html__( 'Dal basso', 'lu3g-mobile-menu' ),
+				'shutter' => esc_html__( 'Dal centro', 'lu3g-mobile-menu' ),
+			),
+			'condition' => array( 'desktop_mode' => 'bar', 'pointer' => 'background' ),
+		) );
+
+		$this->add_control( 'pointer_anim_text', array(
+			'label'     => esc_html__( 'Animazione dell\'effetto', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'float',
+			'options'   => array(
+				'grow'   => esc_html__( 'Ingrandisce', 'lu3g-mobile-menu' ),
+				'float'  => esc_html__( 'Sale', 'lu3g-mobile-menu' ),
+				'sink'   => esc_html__( 'Scende', 'lu3g-mobile-menu' ),
+				'skew'   => esc_html__( 'Inclina', 'lu3g-mobile-menu' ),
+				'rotate' => esc_html__( 'Ruota', 'lu3g-mobile-menu' ),
+			),
+			'condition' => array( 'desktop_mode' => 'bar', 'pointer' => 'text' ),
+		) );
+
+		$this->add_control( 'mega_heading', array(
+			'label'     => esc_html__( 'Mega menu', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::HEADING,
+			'separator' => 'before',
+			'condition' => $bar,
+		) );
+
+		$this->add_control( 'mega_help', array(
+			'type'            => Controls_Manager::RAW_HTML,
+			'raw'             => esc_html__( 'Si attiva voce per voce in Aspetto → Menu: apri una voce di primo livello e nel riquadro "Mega menu LU3G" scegli "Colonne dalle sotto-voci" oppure un template Elementor.', 'lu3g-mobile-menu' ),
+			'content_classes' => 'elementor-panel-alert elementor-panel-alert-info',
+			'condition'       => $bar,
+		) );
+
+		$this->add_control( 'mega_width', array(
+			'label'     => esc_html__( 'Larghezza del mega menu', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::SELECT,
+			'default'   => 'container',
+			'options'   => array(
+				'container' => esc_html__( 'Come il contenitore della barra', 'lu3g-mobile-menu' ),
+				'full'      => esc_html__( 'Tutto lo schermo', 'lu3g-mobile-menu' ),
+				'custom'    => esc_html__( 'Personalizzata, centrata sulla voce', 'lu3g-mobile-menu' ),
+			),
+			'condition' => $bar,
+		) );
+
+		$this->add_responsive_control( 'mega_custom_width', array(
+			'label'      => esc_html__( 'Larghezza', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px', 'vw' ),
+			'range'      => array(
+				'px' => array( 'min' => 300, 'max' => 1600 ),
+				'vw' => array( 'min' => 20, 'max' => 100 ),
+			),
+			'default'    => array( 'unit' => 'px', 'size' => 800 ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__mega' => 'width: {{SIZE}}{{UNIT}};' ),
+			'condition'  => array( 'desktop_mode' => 'bar', 'mega_width' => 'custom' ),
+		) );
+
+		$this->end_controls_section();
+	}
+
 	/* ---------------------------------------------------------------------------------- Contenuto: extra */
 	private function controls_extras() {
 		$this->start_controls_section( 'section_extras', array( 'label' => esc_html__( 'Voci extra', 'lu3g-mobile-menu' ) ) );
@@ -276,6 +478,17 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				'social'   => esc_html__( 'Icona social', 'lu3g-mobile-menu' ),
 				'cta'      => esc_html__( 'Pulsante CTA', 'lu3g-mobile-menu' ),
 				'text'     => esc_html__( 'Testo', 'lu3g-mobile-menu' ),
+			),
+		) );
+
+		$rep->add_control( 'show_on', array(
+			'label'   => esc_html__( 'Mostra in', 'lu3g-mobile-menu' ),
+			'type'    => Controls_Manager::SELECT,
+			'default' => 'both',
+			'options' => array(
+				'both'    => esc_html__( 'Pannello mobile e barra desktop', 'lu3g-mobile-menu' ),
+				'mobile'  => esc_html__( 'Solo pannello mobile', 'lu3g-mobile-menu' ),
+				'desktop' => esc_html__( 'Solo barra desktop', 'lu3g-mobile-menu' ),
 			),
 		) );
 
@@ -667,12 +880,12 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$this->start_controls_section( 'section_behavior', array( 'label' => esc_html__( 'Comportamento', 'lu3g-mobile-menu' ) ) );
 
 		$this->add_control( 'breakpoint', array(
-			'label'       => esc_html__( 'Visibile sotto i (px)', 'lu3g-mobile-menu' ),
+			'label'       => esc_html__( 'Breakpoint mobile (px)', 'lu3g-mobile-menu' ),
 			'type'        => Controls_Manager::NUMBER,
 			'min'         => 0,
 			'max'         => 3000,
 			'default'     => 1025,
-			'description' => esc_html__( 'Il widget compare solo con schermi più stretti di questo valore. 0 = sempre visibile. Nell\'editor resta sempre visibile.', 'lu3g-mobile-menu' ),
+			'description' => esc_html__( 'Sotto questa larghezza il widget è l\'hamburger; sopra vale Desktop → Su desktop. 0 = nessun breakpoint (barra ovunque, oppure hamburger ovunque se Su desktop è Nascosto). Con "Nascosto", nell\'editor l\'hamburger resta visibile.', 'lu3g-mobile-menu' ),
 		) );
 
 		$this->add_control( 'close_overlay', array(
@@ -1600,6 +1813,492 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$this->end_controls_section();
 	}
 
+	/**
+	 * Schede normale / hover / attivo con selettori propri per testo e sfondo.
+	 * $states = array( stato => array( etichetta, selettore testo, selettore sfondo ) ).
+	 */
+	private function state_tabs( $prefix, array $states ) {
+		$this->start_controls_tabs( $prefix . '_tabs' );
+		foreach ( $states as $state => $def ) {
+			$this->start_controls_tab( $prefix . '_tab_' . $state, array( 'label' => $def[0] ) );
+			$this->add_control( $prefix . '_color_' . $state, array(
+				'label'     => esc_html__( 'Colore del testo', 'lu3g-mobile-menu' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array( $def[1] => 'color: {{VALUE}};' ),
+			) );
+			$this->add_control( $prefix . '_bg_' . $state, array(
+				'label'     => esc_html__( 'Sfondo', 'lu3g-mobile-menu' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array( $def[2] => 'background-color: {{VALUE}};' ),
+			) );
+			$this->end_controls_tab();
+		}
+		$this->end_controls_tabs();
+	}
+
+	/** Selettori dei tre stati per le voci di un livello della barra ($item = selettore della voce). */
+	private function bar_states( $item ) {
+		$text = function ( $suffix ) use ( $item ) {
+			return $item . $suffix . ' > .lu3g-mb__link, ' . $item . $suffix . ' > .lu3g-mb__toggle';
+		};
+		$link = function ( $suffix ) use ( $item ) {
+			return $item . $suffix . ' > .lu3g-mb__link';
+		};
+		return array(
+			'normal' => array( esc_html__( 'Normale', 'lu3g-mobile-menu' ), $text( '' ), $link( '' ) ),
+			'hover'  => array(
+				esc_html__( 'Hover', 'lu3g-mobile-menu' ),
+				$text( ':hover' ) . ', ' . $text( '.is-open' ) . ', ' . $link( '' ) . ':focus-visible',
+				$link( ':hover' ) . ', ' . $link( '.is-open' ) . ', ' . $link( '' ) . ':focus-visible',
+			),
+			'active' => array(
+				esc_html__( 'Attivo', 'lu3g-mobile-menu' ),
+				$text( '.is-current' ) . ', ' . str_replace( '{{WRAPPER}} ', '{{WRAPPER}} .lu3g-mb--hl-anc ', $text( '.is-current-ancestor' ) ),
+				$link( '.is-current' ) . ', ' . str_replace( '{{WRAPPER}} ', '{{WRAPPER}} .lu3g-mb--hl-anc ', $link( '.is-current-ancestor' ) ),
+			),
+		);
+	}
+
+	/* ------------------------------------------------------------------------------ Stile: barra desktop */
+	private function style_bar() {
+		$this->start_controls_section( 'style_bar', array(
+			'label'     => esc_html__( 'Barra desktop', 'lu3g-mobile-menu' ),
+			'tab'       => Controls_Manager::TAB_STYLE,
+			'condition' => array( 'desktop_mode' => 'bar' ),
+		) );
+
+		$top = '{{WRAPPER}} .lu3g-mb__menu > .lu3g-mb__item';
+
+		$this->add_responsive_control( 'mb_align', array(
+			'label'     => esc_html__( 'Allineamento', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::CHOOSE,
+			'options'   => array(
+				'flex-start'    => array( 'title' => esc_html__( 'Sinistra', 'lu3g-mobile-menu' ), 'icon' => 'eicon-h-align-left' ),
+				'center'        => array( 'title' => esc_html__( 'Centro', 'lu3g-mobile-menu' ), 'icon' => 'eicon-h-align-center' ),
+				'flex-end'      => array( 'title' => esc_html__( 'Destra', 'lu3g-mobile-menu' ), 'icon' => 'eicon-h-align-right' ),
+				'space-between' => array( 'title' => esc_html__( 'Distribuito', 'lu3g-mobile-menu' ), 'icon' => 'eicon-h-align-stretch' ),
+			),
+			'selectors' => array( '{{WRAPPER}} .lu3g-mb, {{WRAPPER}} .lu3g-mb__menu' => 'justify-content: {{VALUE}};' ),
+		) );
+
+		$this->add_responsive_control( 'mb_gap', array(
+			'label'      => esc_html__( 'Spaziatura tra le voci', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 80 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__menu' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_group_control( Group_Control_Typography::get_type(), array(
+			'name'     => 'mb_typo',
+			'selector' => $top . ' > .lu3g-mb__link',
+		) );
+
+		$this->state_tabs( 'mb', $this->bar_states( $top ) );
+
+		$this->add_responsive_control( 'mb_padding', array(
+			'label'      => esc_html__( 'Padding delle voci', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( $top . ' > .lu3g-mb__link' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'separator'  => 'before',
+		) );
+
+		$this->add_control( 'mb_radius', array(
+			'label'      => esc_html__( 'Raggio del bordo delle voci', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'selectors'  => array( $top . ' > .lu3g-mb__link' => 'border-radius: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'mb_indicator_size', array(
+			'label'      => esc_html__( 'Dimensione indicatore', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 6, 'max' => 30 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__indicator' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};' ),
+			'condition'  => array( 'desktop_indicator!' => 'none' ),
+		) );
+
+		$this->add_control( 'pointer_style_heading', array(
+			'label'     => esc_html__( 'Effetto al passaggio', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::HEADING,
+			'separator' => 'before',
+			'condition' => array( 'pointer!' => array( 'none', 'text' ) ),
+		) );
+
+		$this->add_control( 'pointer_color', array(
+			'label'     => esc_html__( 'Colore dell\'effetto', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mb' => '--lu3g-mb-pc: {{VALUE}}; --lu3g-mb-pbg: {{VALUE}};' ),
+			'condition' => array( 'pointer!' => array( 'none', 'text' ) ),
+		) );
+
+		$this->add_control( 'pointer_height', array(
+			'label'      => esc_html__( 'Spessore', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 1, 'max' => 12 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb' => '--lu3g-mb-ph: {{SIZE}}{{UNIT}};' ),
+			'condition'  => array( 'pointer' => array( 'underline', 'overline', 'double', 'framed' ) ),
+		) );
+
+		$this->add_control( 'pointer_radius', array(
+			'label'      => esc_html__( 'Raggio', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb' => '--lu3g-mb-pr: {{SIZE}}{{UNIT}};' ),
+			'condition'  => array( 'pointer' => array( 'framed', 'background' ) ),
+		) );
+
+		$this->add_control( 'pointer_dur', array(
+			'label'     => esc_html__( 'Durata effetto (ms)', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::NUMBER,
+			'min'       => 0,
+			'max'       => 1500,
+			'step'      => 50,
+			'default'   => 300,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mb' => '--lu3g-mb-pd: {{VALUE}}ms;' ),
+			'condition' => array( 'pointer!' => 'none' ),
+		) );
+
+		$this->end_controls_section();
+	}
+
+	/* ---------------------------------------------------------------------------- Stile: tendine desktop */
+	private function style_dropdown() {
+		$this->start_controls_section( 'style_dropdown', array(
+			'label'     => esc_html__( 'Tendine desktop', 'lu3g-mobile-menu' ),
+			'tab'       => Controls_Manager::TAB_STYLE,
+			'condition' => array( 'desktop_mode' => 'bar' ),
+		) );
+
+		$sub = '{{WRAPPER}} .lu3g-mb__sub > .lu3g-mb__item';
+
+		$this->add_control( 'drop_min_width', array(
+			'label'      => esc_html__( 'Larghezza minima', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 120, 'max' => 500 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__dropdown:not(.lu3g-mb__mega)' => 'min-width: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'drop_offset', array(
+			'label'      => esc_html__( 'Distanza dalla barra', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb' => '--lu3g-mb-offset: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_group_control( Group_Control_Background::get_type(), array(
+			'name'     => 'drop_bg',
+			'types'    => array( 'classic', 'gradient' ),
+			'selector' => '{{WRAPPER}} .lu3g-mb__dropdown',
+		) );
+
+		$this->add_responsive_control( 'drop_padding', array(
+			'label'      => esc_html__( 'Padding', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__dropdown:not(.lu3g-mb__mega)' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_group_control( Group_Control_Border::get_type(), array(
+			'name'     => 'drop_border',
+			'selector' => '{{WRAPPER}} .lu3g-mb__dropdown',
+		) );
+
+		$this->add_control( 'drop_radius', array(
+			'label'      => esc_html__( 'Raggio del bordo', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__dropdown' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_group_control( Group_Control_Box_Shadow::get_type(), array(
+			'name'     => 'drop_shadow',
+			'selector' => '{{WRAPPER}} .lu3g-mb__dropdown',
+		) );
+
+		$this->add_control( 'drop_items_heading', array(
+			'label'     => esc_html__( 'Voci', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+
+		$this->add_group_control( Group_Control_Typography::get_type(), array(
+			'name'     => 'drop_typo',
+			'selector' => $sub . ' > .lu3g-mb__link',
+		) );
+
+		$this->state_tabs( 'drop', $this->bar_states( $sub ) );
+
+		$this->add_responsive_control( 'drop_link_padding', array(
+			'label'      => esc_html__( 'Padding delle voci', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( $sub . ' > .lu3g-mb__link' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+			'separator'  => 'before',
+		) );
+
+		$this->divider_controls( 'drop', $sub, '' );
+
+		$this->end_controls_section();
+	}
+
+	/* -------------------------------------------------------------------------------- Stile: mega menu */
+	private function style_mega() {
+		$this->start_controls_section( 'style_mega', array(
+			'label'     => esc_html__( 'Mega menu', 'lu3g-mobile-menu' ),
+			'tab'       => Controls_Manager::TAB_STYLE,
+			'condition' => array( 'desktop_mode' => 'bar' ),
+		) );
+
+		$this->add_control( 'mega_style_help', array(
+			'type'            => Controls_Manager::RAW_HTML,
+			'raw'             => esc_html__( 'Sfondo, bordo, raggio e ombra sono quelli di Stile → Tendine desktop.', 'lu3g-mobile-menu' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+
+		$this->add_responsive_control( 'mega_padding', array(
+			'label'      => esc_html__( 'Padding (colonne)', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__mega--columns' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'mega_tpl_padding', array(
+			'label'      => esc_html__( 'Padding (template)', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__mega--template' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'mega_gap', array(
+			'label'      => esc_html__( 'Distanza tra le colonne', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 100 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__mega-cols' => 'column-gap: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'mega_title_heading', array(
+			'label'     => esc_html__( 'Titoli delle colonne', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+
+		$this->add_group_control( Group_Control_Typography::get_type(), array(
+			'name'     => 'mega_title_typo',
+			'selector' => '{{WRAPPER}} .lu3g-mb__col-title',
+		) );
+
+		$this->add_control( 'mega_title_color', array(
+			'label'     => esc_html__( 'Colore', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mb__col-title' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'mega_title_color_hover', array(
+			'label'     => esc_html__( 'Colore hover', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} a.lu3g-mb__col-title:hover, {{WRAPPER}} a.lu3g-mb__col-title:focus-visible' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'mega_title_spacing', array(
+			'label'      => esc_html__( 'Distanza dai link', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 40 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__col-title' => 'margin-bottom: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'mega_link_heading', array(
+			'label'     => esc_html__( 'Link delle colonne', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+
+		$this->add_group_control( Group_Control_Typography::get_type(), array(
+			'name'     => 'mega_link_typo',
+			'selector' => '{{WRAPPER}} .lu3g-mb__col-link',
+		) );
+
+		$this->add_control( 'mega_link_color', array(
+			'label'     => esc_html__( 'Colore', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mb__col-link' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'mega_link_color_hover', array(
+			'label'     => esc_html__( 'Colore hover e attivo', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} a.lu3g-mb__col-link:hover, {{WRAPPER}} a.lu3g-mb__col-link:focus-visible, {{WRAPPER}} a.lu3g-mb__col-link[aria-current="page"]' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'mega_link_spacing', array(
+			'label'      => esc_html__( 'Spaziatura tra i link', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 30 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__col-links' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->end_controls_section();
+	}
+
+	/* -------------------------------------------------------------------- Stile: voci extra nella barra */
+	private function style_bar_extras() {
+		$this->start_controls_section( 'style_bar_extras', array(
+			'label'     => esc_html__( 'Voci extra nella barra', 'lu3g-mobile-menu' ),
+			'tab'       => Controls_Manager::TAB_STYLE,
+			'condition' => array( 'desktop_mode' => 'bar' ),
+		) );
+
+		$this->add_control( 'bx_help', array(
+			'type'            => Controls_Manager::RAW_HTML,
+			'raw'             => esc_html__( 'Le voci extra "come le voci del menu" usano lo stile della Barra desktop. Per scegliere cosa mostrare: Contenuto → Voci extra → Mostra in.', 'lu3g-mobile-menu' ),
+			'content_classes' => 'elementor-descriptor',
+		) );
+
+		$this->add_control( 'bx_gap', array(
+			'label'      => esc_html__( 'Spaziatura tra le voci', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 60 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__extras' => 'gap: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'bx_spacing', array(
+			'label'      => esc_html__( 'Distanza dal menu', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 0, 'max' => 120 ) ),
+			'selectors'  => array(
+				'{{WRAPPER}} .lu3g-mb__extras--after'  => 'margin-left: {{SIZE}}{{UNIT}};',
+				'{{WRAPPER}} .lu3g-mb__extras--before' => 'margin-right: {{SIZE}}{{UNIT}};',
+			),
+		) );
+
+		$this->add_control( 'bx_contacts_heading', array(
+			'label'     => esc_html__( 'Contatti e testi', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+
+		$this->add_group_control( Group_Control_Typography::get_type(), array(
+			'name'     => 'bx_contact_typo',
+			'selector' => '{{WRAPPER}} .lu3g-mb__contact',
+		) );
+
+		$this->add_control( 'bx_contact_color', array(
+			'label'     => esc_html__( 'Colore del testo', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mb__contact' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'bx_contact_color_hover', array(
+			'label'     => esc_html__( 'Colore hover', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} a.lu3g-mb__contact:hover, {{WRAPPER}} a.lu3g-mb__contact:focus-visible' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'bx_contact_icon_color', array(
+			'label'     => esc_html__( 'Colore delle icone', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mb__contact-icon' => 'color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'bx_contact_icon_size', array(
+			'label'      => esc_html__( 'Dimensione delle icone', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 8, 'max' => 40 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__contact-icon' => 'font-size: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'bx_social_heading', array(
+			'label'     => esc_html__( 'Icone social', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+
+		$this->add_control( 'bx_social_icon_size', array(
+			'label'      => esc_html__( 'Dimensione icona', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 8, 'max' => 40 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__social-link' => 'font-size: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'bx_social_box', array(
+			'label'      => esc_html__( 'Dimensione pulsante', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px' ),
+			'range'      => array( 'px' => array( 'min' => 16, 'max' => 70 ) ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__social-link' => 'width: {{SIZE}}{{UNIT}}; height: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->add_control( 'bx_social_radius', array(
+			'label'      => esc_html__( 'Raggio del bordo', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::SLIDER,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__social-link' => 'border-radius: {{SIZE}}{{UNIT}};' ),
+		) );
+
+		$this->state_tabs( 'bx_social', array(
+			'normal' => array( esc_html__( 'Normale', 'lu3g-mobile-menu' ), '{{WRAPPER}} .lu3g-mb__social-link', '{{WRAPPER}} .lu3g-mb__social-link' ),
+			'hover'  => array( esc_html__( 'Hover', 'lu3g-mobile-menu' ), '{{WRAPPER}} .lu3g-mb__social-link:hover, {{WRAPPER}} .lu3g-mb__social-link:focus-visible', '{{WRAPPER}} .lu3g-mb__social-link:hover, {{WRAPPER}} .lu3g-mb__social-link:focus-visible' ),
+		) );
+
+		$this->add_control( 'bx_cta_heading', array(
+			'label'     => esc_html__( 'Pulsante CTA', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::HEADING,
+			'separator' => 'before',
+		) );
+
+		$this->add_group_control( Group_Control_Typography::get_type(), array(
+			'name'     => 'bx_cta_typo',
+			'selector' => '{{WRAPPER}} .lu3g-mb__cta',
+		) );
+
+		$this->state_tabs( 'bx_cta', array(
+			'normal' => array( esc_html__( 'Normale', 'lu3g-mobile-menu' ), '{{WRAPPER}} .lu3g-mb__cta', '{{WRAPPER}} .lu3g-mb__cta' ),
+			'hover'  => array( esc_html__( 'Hover', 'lu3g-mobile-menu' ), '{{WRAPPER}} .lu3g-mb__cta:hover, {{WRAPPER}} .lu3g-mb__cta:focus-visible', '{{WRAPPER}} .lu3g-mb__cta:hover, {{WRAPPER}} .lu3g-mb__cta:focus-visible' ),
+		) );
+
+		$this->add_group_control( Group_Control_Border::get_type(), array(
+			'name'      => 'bx_cta_border',
+			'selector'  => '{{WRAPPER}} .lu3g-mb__cta',
+			'separator' => 'before',
+		) );
+
+		$this->add_control( 'bx_cta_border_hover', array(
+			'label'     => esc_html__( 'Colore del bordo hover', 'lu3g-mobile-menu' ),
+			'type'      => Controls_Manager::COLOR,
+			'selectors' => array( '{{WRAPPER}} .lu3g-mb__cta:hover, {{WRAPPER}} .lu3g-mb__cta:focus-visible' => 'border-color: {{VALUE}};' ),
+		) );
+
+		$this->add_control( 'bx_cta_radius', array(
+			'label'      => esc_html__( 'Raggio del bordo', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', '%' ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__cta' => 'border-radius: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->add_responsive_control( 'bx_cta_padding', array(
+			'label'      => esc_html__( 'Padding', 'lu3g-mobile-menu' ),
+			'type'       => Controls_Manager::DIMENSIONS,
+			'size_units' => array( 'px', 'em' ),
+			'selectors'  => array( '{{WRAPPER}} .lu3g-mb__cta' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};' ),
+		) );
+
+		$this->end_controls_section();
+	}
+
 	/* =====================================================================================================
 	 * RENDERING
 	 * ===================================================================================================== */
@@ -1621,7 +2320,9 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		$this->uid         = 'lu3g-mm-' . $this->get_id();
 		$this->anim_index  = 0;
 		$this->current_url = $this->normalize_url( $this->request_url() );
+		$this->menu_data   = null;
 		$edit              = $this->is_edit_mode();
+		$desktop           = $this->pick( 'desktop_mode', array( 'hidden', 'bar', 'hamburger' ), 'hidden' );
 
 		$breakpoint = isset( $this->s['breakpoint'] ) ? absint( $this->s['breakpoint'] ) : 0;
 		$panel_anim = $this->pick( 'panel_animation', array( 'slide-left', 'slide-right', 'slide-top', 'slide-bottom', 'fade', 'flip', 'card', 'fullscreen', 'zoom', 'circle', 'curtain', 'blinds' ), 'slide-left' );
@@ -1638,7 +2339,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			'esc'          => $this->yes( 'close_esc' ),
 			'lock'         => $this->yes( 'lock_scroll' ),
 			'accordion'    => $this->yes( 'accordion' ),
-			'breakpoint'   => $edit ? 0 : $breakpoint,
+			'breakpoint'   => ( $edit && 'bar' !== $desktop ) ? 0 : $breakpoint,
 			'editor'       => $edit,
 			'editorOpen'   => $edit && $this->yes( 'editor_open' ),
 		);
@@ -1652,12 +2353,28 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			$layer_class[] = 'lu3g-mm__layer--slide';
 		}
 
-		// visibile solo sotto il breakpoint (CSS in linea, così non c'è nessun lampo prima del JavaScript)
-		if ( $breakpoint > 0 && ! $edit ) {
+		// chi si vede sopra e sotto il breakpoint (CSS in linea, così non c'è nessun lampo prima del JavaScript):
+		// - Nascosto: tutto il widget solo sotto il breakpoint (nell'editor resta visibile, per poterlo modificare);
+		// - Barra: barra sopra, hamburger sotto (anche nell'editor, dove si prova con la vista desktop/mobile);
+		// - Hamburger: hamburger ovunque, nessuna regola.
+		$wrapper = '.elementor-element-' . $this->get_id();
+		if ( 'bar' === $desktop ) {
+			if ( $breakpoint > 0 ) {
+				printf(
+					'<style>@media (min-width:%1$dpx){%2$s .lu3g-mm{display:none!important}}@media (max-width:%3$dpx){%2$s .lu3g-mb{display:none!important}}</style>',
+					(int) $breakpoint,
+					esc_attr( $wrapper ),
+					(int) $breakpoint - 1
+				);
+			} else {
+				printf( '<style>%s .lu3g-mm{display:none!important}</style>', esc_attr( $wrapper ) );
+			}
+			$this->render_bar();
+		} elseif ( 'hidden' === $desktop && $breakpoint > 0 && ! $edit ) {
 			printf(
-				'<style>@media (min-width:%1$dpx){.elementor-element-%2$s{display:none!important}}</style>',
+				'<style>@media (min-width:%1$dpx){%2$s{display:none!important}}</style>',
 				(int) $breakpoint,
-				esc_attr( $this->get_id() )
+				esc_attr( $wrapper )
 			);
 		}
 
@@ -1792,20 +2509,25 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		return LU3G_Mobile_Menu::translate_menu_id( isset( $this->s['menu'] ) ? $this->s['menu'] : 0 );
 	}
 
-	private function render_menu() {
+	/**
+	 * Menu di WordPress letto una sola volta per rendering e condiviso da pannello mobile e barra desktop:
+	 * array( 'menu', 'tree' (voci per genitore), 'args', 'depth' ), oppure false se non c'è.
+	 */
+	private function load_menu() {
+		if ( null !== $this->menu_data ) {
+			return $this->menu_data;
+		}
+		$this->menu_data = false;
+
 		$menu_id = $this->get_menu_id();
 		$menu    = $menu_id ? wp_get_nav_menu_object( $menu_id ) : false;
-
 		if ( ! $menu ) {
-			if ( $this->is_edit_mode() && 'none' !== $this->s['menu_source'] ) {
-				echo '<p class="lu3g-mm__notice">' . esc_html__( 'Seleziona un menu (o assegna un menu alla posizione scelta).', 'lu3g-mobile-menu' ) . '</p>';
-			}
-			return;
+			return false;
 		}
 
 		$items = wp_get_nav_menu_items( $menu->term_id, array( 'update_post_term_cache' => false ) );
 		if ( empty( $items ) ) {
-			return;
+			return false;
 		}
 		$items = array_values( array_filter( $items, function ( $item ) {
 			return empty( $item->_invalid );
@@ -1843,14 +2565,28 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			$tree[ (int) $item->menu_item_parent ][] = $item;
 		}
 		if ( empty( $tree[0] ) ) {
+			return false;
+		}
+
+		$this->menu_data = array( 'menu' => $menu, 'tree' => $tree, 'args' => $args, 'depth' => $depth );
+		return $this->menu_data;
+	}
+
+	/** Menu nel pannello mobile. */
+	private function render_menu() {
+		$data = $this->load_menu();
+		if ( ! $data ) {
+			if ( $this->is_edit_mode() && 'none' !== $this->s['menu_source'] ) {
+				echo '<p class="lu3g-mm__notice">' . esc_html__( 'Seleziona un menu (o assegna un menu alla posizione scelta).', 'lu3g-mobile-menu' ) . '</p>';
+			}
 			return;
 		}
 
 		$this->sub_icon_html = $this->build_sub_icon();
 
-		echo '<nav class="lu3g-mm__nav" aria-label="' . esc_attr( $menu->name ) . '">';
+		echo '<nav class="lu3g-mm__nav" aria-label="' . esc_attr( $data['menu']->name ) . '">';
 		echo '<ul class="lu3g-mm__menu">';
-		$this->render_items( $tree, 0, 0, $depth, $args );
+		$this->render_items( $data['tree'], 0, 0, $data['depth'], $data['args'] );
 		echo '</ul></nav>';
 	}
 
@@ -2015,7 +2751,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 	 * (es. le icone social in una riga, i contatti in colonna).
 	 */
 	private function render_extras( $position ) {
-		$extras = empty( $this->s['extras'] ) ? array() : $this->s['extras'];
+		$extras = $this->extras_for( 'mobile' );
 		if ( ! $extras ) {
 			return;
 		}
@@ -2063,8 +2799,20 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 		return 'contact';
 	}
 
-	/** HTML di una voce extra ('' se mancano i dati necessari). */
-	private function extra_html( array $item ) {
+	/** Voci extra da mostrare nel pannello mobile ('mobile') o nella barra desktop ('desktop'). */
+	private function extras_for( $where ) {
+		$extras = empty( $this->s['extras'] ) ? array() : (array) $this->s['extras'];
+		return array_values( array_filter( $extras, function ( $item ) use ( $where ) {
+			$show = isset( $item['show_on'] ) && '' !== $item['show_on'] ? $item['show_on'] : 'both';
+			return 'both' === $show || $where === $show;
+		} ) );
+	}
+
+	/**
+	 * Dati di una voce extra, comuni a pannello e barra: tipo, testo, attributi del link, icona, pagina corrente.
+	 * null se mancano i dati necessari (es. telefono vuoto).
+	 */
+	private function extra_parts( array $item ) {
 		$type  = isset( $item['type'] ) ? $item['type'] : 'link';
 		$label = isset( $item['label'] ) ? trim( (string) $item['label'] ) : '';
 		$atts  = array();
@@ -2074,7 +2822,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			case 'phone':
 				$number = isset( $item['phone'] ) ? trim( (string) $item['phone'] ) : '';
 				if ( '' === $number ) {
-					return '';
+					return null;
 				}
 				$atts['href'] = 'tel:' . preg_replace( '/[^0-9+]/', '', $number );
 				$text         = '' !== $label ? $label : $number;
@@ -2083,7 +2831,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			case 'email':
 				$email = isset( $item['email'] ) ? sanitize_email( $item['email'] ) : '';
 				if ( ! $email ) {
-					return '';
+					return null;
 				}
 				$atts['href'] = 'mailto:' . antispambot( $email );
 				$text         = '' !== $label ? $label : antispambot( $email );
@@ -2092,7 +2840,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 			case 'whatsapp':
 				$number = isset( $item['whatsapp'] ) ? preg_replace( '/\D/', '', (string) $item['whatsapp'] ) : '';
 				if ( '' === $number ) {
-					return '';
+					return null;
 				}
 				$message        = isset( $item['whatsapp_message'] ) ? trim( (string) $item['whatsapp_message'] ) : '';
 				$atts['href']   = 'https://wa.me/' . $number . ( '' !== $message ? '?text=' . rawurlencode( $message ) : '' );
@@ -2103,14 +2851,14 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 
 			case 'text':
 				if ( '' === $label ) {
-					return '';
+					return null;
 				}
-				return '<li class="lu3g-mm__contact lu3g-mm__contact-text-only lu3g-mm__anim"' . $this->anim_style() . '><span class="lu3g-mm__contact-text">' . esc_html( $label ) . '</span></li>';
+				return array( 'type' => 'text', 'label' => $label, 'text' => $label, 'atts' => array(), 'icon' => '', 'current' => false );
 
 			default: // link, social, cta
 				$link = isset( $item['link'] ) && is_array( $item['link'] ) ? $item['link'] : array();
 				if ( empty( $link['url'] ) ) {
-					return '';
+					return null;
 				}
 				$atts['href'] = $link['url'];
 				$rel          = array();
@@ -2125,14 +2873,42 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 					$atts['rel'] = implode( ' ', $rel );
 				}
 				if ( 'social' !== $type && '' === $label ) {
-					return '';
+					return null;
 				}
 		}
 
-		$icon    = $this->extra_icon( $type, isset( $item['icon'] ) ? $item['icon'] : array() );
 		$current = $this->is_current_url( $atts['href'] );
 		if ( $current ) {
 			$atts['aria-current'] = 'page';
+		}
+		if ( 'social' === $type ) {
+			$atts['aria-label'] = '' !== $label ? $label : $this->social_name( $atts['href'] );
+		}
+
+		return array(
+			'type'    => $type,
+			'label'   => $label,
+			'text'    => $text,
+			'atts'    => $atts,
+			'icon'    => $this->extra_icon( $type, isset( $item['icon'] ) ? $item['icon'] : array() ),
+			'current' => $current,
+		);
+	}
+
+	/** HTML di una voce extra nel pannello mobile ('' se mancano i dati necessari). */
+	private function extra_html( array $item ) {
+		$p = $this->extra_parts( $item );
+		if ( ! $p ) {
+			return '';
+		}
+		$type    = $p['type'];
+		$atts    = $p['atts'];
+		$icon    = $p['icon'];
+		$text    = $p['text'];
+		$current = $p['current'];
+
+		if ( 'text' === $type ) {
+			return '<li class="lu3g-mm__contact lu3g-mm__contact-text-only lu3g-mm__anim"' . $this->anim_style() . '><span class="lu3g-mm__contact-text">' . esc_html( $text ) . '</span></li>';
 		}
 
 		switch ( $this->extra_group( $item ) ) {
@@ -2142,8 +2918,7 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 					. '<a' . $this->attrs( $atts ) . '>' . ( $icon ? '<span class="lu3g-mm__link-icon" aria-hidden="true">' . $icon . '</span>' : '' ) . '<span class="lu3g-mm__text">' . esc_html( $text ) . '</span></a></div></li>';
 
 			case 'social':
-				$atts['class']      = 'lu3g-mm__social-link';
-				$atts['aria-label'] = '' !== $label ? $label : $this->social_name( $atts['href'] );
+				$atts['class'] = 'lu3g-mm__social-link';
 				return '<li class="lu3g-mm__social-item lu3g-mm__anim"' . $this->anim_style() . '><a' . $this->attrs( $atts ) . '>' . $icon . '</a></li>';
 
 			case 'cta':
@@ -2155,6 +2930,329 @@ class LU3G_Mobile_Menu_Widget extends Widget_Base {
 				return '<li class="lu3g-mm__contact lu3g-mm__contact--' . esc_attr( $type ) . ' lu3g-mm__anim"' . $this->anim_style() . '><a' . $this->attrs( $atts ) . '>'
 					. ( $icon ? '<span class="lu3g-mm__contact-icon" aria-hidden="true">' . $icon . '</span>' : '' )
 					. '<span class="lu3g-mm__contact-text">' . esc_html( $text ) . '</span></a></li>';
+		}
+	}
+
+	/* ------------------------------------------------------------------------------------ barra desktop */
+
+	/**
+	 * Barra orizzontale per il desktop: voci del menu con tendine (anche su più livelli) o mega menu,
+	 * voci extra prima o dopo. Le tendine le apre il JS (mouse, click, tastiera, tocco).
+	 */
+	private function render_bar() {
+		$data    = $this->load_menu();
+		$pointer = $this->pick( 'pointer', array( 'none', 'underline', 'overline', 'double', 'framed', 'background', 'text' ), 'underline' );
+		$anims   = array(
+			'underline'  => array( 'pointer_anim_line', array( 'fade', 'grow', 'slide', 'drop' ), 'grow' ),
+			'overline'   => array( 'pointer_anim_line', array( 'fade', 'grow', 'slide', 'drop' ), 'grow' ),
+			'double'     => array( 'pointer_anim_line', array( 'fade', 'grow', 'slide', 'drop' ), 'grow' ),
+			'framed'     => array( 'pointer_anim_frame', array( 'fade', 'grow', 'shrink' ), 'fade' ),
+			'background' => array( 'pointer_anim_bg', array( 'fade', 'grow', 'sweep', 'rise', 'shutter' ), 'sweep' ),
+			'text'       => array( 'pointer_anim_text', array( 'grow', 'float', 'sink', 'skew', 'rotate' ), 'float' ),
+		);
+		$anim = isset( $anims[ $pointer ] ) ? $this->pick( $anims[ $pointer ][0], $anims[ $pointer ][1], $anims[ $pointer ][2] ) : '';
+
+		$opts = array(
+			'trigger' => $this->pick( 'desktop_trigger', array( 'hover', 'click' ), 'hover' ),
+			'delay'   => isset( $this->s['desktop_close_delay'] ) && '' !== $this->s['desktop_close_delay'] ? absint( $this->s['desktop_close_delay'] ) : 250,
+			'mega'    => $this->pick( 'mega_width', array( 'container', 'full', 'custom' ), 'container' ),
+		);
+
+		$this->bar_indicator_html = $this->build_bar_indicator();
+		$position                 = 'before' === $this->s['extras_position'] ? 'before' : 'after';
+		$label                    = $data ? $data['menu']->name : ( $this->s['panel_label'] ? $this->s['panel_label'] : __( 'Menu di navigazione', 'lu3g-mobile-menu' ) );
+
+		printf(
+			'<nav class="lu3g-mb%1$s" data-lu3g-mb="%2$s" data-drop="%3$s" data-pointer="%4$s" data-pointer-anim="%5$s" aria-label="%6$s">',
+			$this->yes( 'highlight_ancestors' ) ? ' lu3g-mb--hl-anc' : '',
+			esc_attr( wp_json_encode( $opts ) ),
+			esc_attr( $this->pick( 'desktop_drop_anim', array( 'fade', 'slide-up', 'slide-down', 'zoom', 'flip', 'none' ), 'slide-up' ) ),
+			esc_attr( $pointer ),
+			esc_attr( $anim ),
+			esc_attr( $label )
+		);
+
+		if ( 'before' === $position ) {
+			$this->render_bar_extras( 'before' );
+		}
+		echo '<ul class="lu3g-mb__menu">';
+		if ( 'before' === $position ) {
+			echo $this->bar_extra_menu_items(); // phpcs:ignore WordPress.Security.EscapeOutput -- HTML costruito ed escapato in extra_parts()/attrs()
+		}
+		if ( $data ) {
+			$this->render_bar_items( $data['tree'], 0, 0, $data['depth'], $data['args'] );
+		} elseif ( $this->is_edit_mode() && 'none' !== $this->s['menu_source'] ) {
+			echo '<li class="lu3g-mm__notice">' . esc_html__( 'Seleziona un menu (o assegna un menu alla posizione scelta).', 'lu3g-mobile-menu' ) . '</li>';
+		}
+		if ( 'after' === $position ) {
+			echo $this->bar_extra_menu_items(); // phpcs:ignore WordPress.Security.EscapeOutput
+		}
+		echo '</ul>';
+		if ( 'after' === $position ) {
+			$this->render_bar_extras( 'after' );
+		}
+		echo '</nav>';
+	}
+
+	/** Titolo di una voce di menu, con gli stessi filtri di wp_nav_menu(). */
+	private function item_title( $item, $args, $level ) {
+		$title = apply_filters( 'the_title', $item->title, $item->ID );
+		$title = apply_filters( 'nav_menu_item_title', $title, $item, $args, $level );
+		return wp_kses_post( $title );
+	}
+
+	/** Attributi del link di una voce di menu (href, target, rel, title, aria-current). */
+	private function item_link_atts( $item, $class, $current ) {
+		$url  = trim( (string) $item->url );
+		$atts = array( 'class' => $class, 'href' => '' === $url ? '#' : $url );
+		if ( ! empty( $item->attr_title ) ) {
+			$atts['title'] = $item->attr_title;
+		}
+		if ( ! empty( $item->target ) ) {
+			$atts['target'] = $item->target;
+		}
+		$rel = empty( $item->xfn ) ? '' : $item->xfn;
+		if ( '_blank' === $item->target && false === strpos( $rel, 'noopener' ) ) {
+			$rel = trim( $rel . ' noopener' );
+		}
+		if ( $rel ) {
+			$atts['rel'] = $rel;
+		}
+		if ( $current ) {
+			$atts['aria-current'] = 'page';
+		}
+		return $atts;
+	}
+
+	/** Voci di un livello della barra; ricorsivo per le tendine a più livelli. */
+	private function render_bar_items( array $tree, $parent_id, $level, $max_depth, $args ) {
+		foreach ( $tree[ $parent_id ] as $item ) {
+			$classes  = empty( $item->classes ) ? array() : array_filter( (array) $item->classes );
+			$can_go   = 0 === $max_depth || $level + 1 < $max_depth;
+			$has_kids = $can_go && ! empty( $tree[ $item->ID ] );
+			$current  = in_array( 'current-menu-item', $classes, true );
+			$ancestor = in_array( 'current-menu-ancestor', $classes, true ) || in_array( 'current-menu-parent', $classes, true );
+			$url      = trim( (string) $item->url );
+			$is_hash  = '' === $url || '#' === $url;
+			$drop_id  = $this->uid . '-d-' . $item->ID;
+
+			// mega menu: solo sulle voci di primo livello
+			$mega_html = '';
+			$mega_cols = false;
+			$cols      = 0;
+			if ( 0 === $level ) {
+				$mega = LU3G_Mobile_Menu_Mega::get( $item->ID );
+				if ( 'template' === $mega['type'] ) {
+					$mega_html = $this->mega_template_html( $mega['template'] );
+				} elseif ( 'columns' === $mega['type'] && $has_kids ) {
+					$mega_cols = true;
+					$cols      = $mega['cols'];
+				}
+			}
+			$has_drop = $has_kids || '' !== $mega_html;
+
+			$li = array( 'lu3g-mb__item', 'lu3g-mb__item--level-' . $level );
+			foreach ( $classes as $c ) {
+				$li[] = sanitize_html_class( $c );
+			}
+			if ( $has_drop ) {
+				$li[] = 'lu3g-mb__item--has-drop';
+			}
+			if ( '' !== $mega_html || $mega_cols ) {
+				$li[] = 'lu3g-mb__item--mega';
+			}
+			if ( $current ) {
+				$li[] = 'is-current';
+			}
+			if ( $ancestor ) {
+				$li[] = 'is-current-ancestor';
+			}
+
+			$title = $this->item_title( $item, $args, $level );
+			echo '<li class="' . esc_attr( implode( ' ', array_unique( $li ) ) ) . '">';
+
+			if ( $has_drop && $is_hash ) {
+				// voce senza link: è lei stessa il pulsante che apre la tendina
+				printf(
+					'<button type="button" class="lu3g-mb__link lu3g-mb__link--parent" data-mb-toggle aria-expanded="false" aria-controls="%1$s"><span class="lu3g-mb__text">%2$s</span>%3$s</button>',
+					esc_attr( $drop_id ),
+					$title, // phpcs:ignore WordPress.Security.EscapeOutput -- filtrato con wp_kses_post
+					$this->bar_indicator_html // phpcs:ignore WordPress.Security.EscapeOutput -- HTML costruito qui
+				);
+			} else {
+				echo '<a' . $this->attrs( $this->item_link_atts( $item, 'lu3g-mb__link', $current ) ) . '><span class="lu3g-mb__text">' . $title . '</span></a>'; // phpcs:ignore WordPress.Security.EscapeOutput
+				if ( $has_drop ) {
+					// pulsante separato: da tastiera e al tocco apre la tendina senza seguire il link
+					$indicator = '' !== $this->bar_indicator_html ? $this->bar_indicator_html : $this->bar_indicator_svg( 'chevron' );
+					printf(
+						'<button type="button" class="lu3g-mb__toggle%1$s" data-mb-toggle aria-expanded="false" aria-controls="%2$s" aria-label="%3$s">%4$s</button>',
+						'' === $this->bar_indicator_html ? ' lu3g-mb__toggle--sr' : '',
+						esc_attr( $drop_id ),
+						/* translators: %s: nome della voce di menu */
+						esc_attr( sprintf( __( 'Sottomenu di %s', 'lu3g-mobile-menu' ), wp_strip_all_tags( $title ) ) ),
+						$indicator // phpcs:ignore WordPress.Security.EscapeOutput
+					);
+				}
+			}
+
+			if ( '' !== $mega_html ) {
+				echo '<div class="lu3g-mb__dropdown lu3g-mb__mega lu3g-mb__mega--template" id="' . esc_attr( $drop_id ) . '">' . $mega_html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput -- contenuto del template Elementor
+			} elseif ( $mega_cols ) {
+				echo '<div class="lu3g-mb__dropdown lu3g-mb__mega lu3g-mb__mega--columns" id="' . esc_attr( $drop_id ) . '">';
+				echo '<ul class="lu3g-mb__mega-cols"' . ( $cols ? ' style="grid-template-columns:repeat(' . (int) $cols . ',minmax(0,1fr))"' : '' ) . '>';
+				$this->render_mega_columns( $tree, $item->ID, $max_depth, $args );
+				echo '</ul></div>';
+			} elseif ( $has_kids ) {
+				echo '<div class="lu3g-mb__dropdown" id="' . esc_attr( $drop_id ) . '"><ul class="lu3g-mb__sub">';
+				$this->render_bar_items( $tree, $item->ID, $level + 1, $max_depth, $args );
+				echo '</ul></div>';
+			}
+			echo '</li>';
+		}
+	}
+
+	/** Mega menu a colonne: ogni sotto-voce è il titolo di una colonna, le sue sotto-voci sono i link. */
+	private function render_mega_columns( array $tree, $parent_id, $max_depth, $args ) {
+		foreach ( $tree[ $parent_id ] as $col ) {
+			$classes = empty( $col->classes ) ? array() : array_filter( (array) $col->classes );
+			$current = in_array( 'current-menu-item', $classes, true );
+			$url     = trim( (string) $col->url );
+			$title   = $this->item_title( $col, $args, 1 );
+
+			echo '<li class="lu3g-mb__col' . ( $current ? ' is-current' : '' ) . '">';
+			if ( '' === $url || '#' === $url ) {
+				echo '<span class="lu3g-mb__col-title">' . $title . '</span>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			} else {
+				echo '<a' . $this->attrs( $this->item_link_atts( $col, 'lu3g-mb__col-title', $current ) ) . '>' . $title . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			}
+			if ( ( 0 === $max_depth || $max_depth > 2 ) && ! empty( $tree[ $col->ID ] ) ) {
+				echo '<ul class="lu3g-mb__col-links">';
+				$this->render_mega_links( $tree, $col->ID, 2, $max_depth, $args );
+				echo '</ul>';
+			}
+			echo '</li>';
+		}
+	}
+
+	private function render_mega_links( array $tree, $parent_id, $level, $max_depth, $args ) {
+		foreach ( $tree[ $parent_id ] as $item ) {
+			$classes = empty( $item->classes ) ? array() : array_filter( (array) $item->classes );
+			$current = in_array( 'current-menu-item', $classes, true );
+			$title   = $this->item_title( $item, $args, $level );
+
+			echo '<li>';
+			echo '<a' . $this->attrs( $this->item_link_atts( $item, 'lu3g-mb__col-link', $current ) ) . '>' . $title . '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput
+			if ( ( 0 === $max_depth || $level + 1 < $max_depth ) && ! empty( $tree[ $item->ID ] ) ) {
+				echo '<ul class="lu3g-mb__col-links">';
+				$this->render_mega_links( $tree, $item->ID, $level + 1, $max_depth, $args );
+				echo '</ul>';
+			}
+			echo '</li>';
+		}
+	}
+
+	/**
+	 * Contenuto di un template Elementor salvato, nella lingua corrente (WPML/Polylang).
+	 * Protetto dalla ricorsione: un template che contiene questo stesso menu non si richiama all'infinito.
+	 */
+	private function mega_template_html( $template_id ) {
+		static $stack = array();
+
+		$id = (int) $template_id;
+		if ( $id && has_filter( 'wpml_object_id' ) ) {
+			$id = (int) apply_filters( 'wpml_object_id', $id, 'elementor_library', true );
+		}
+		if ( $id && function_exists( 'pll_get_post' ) ) {
+			$translated = pll_get_post( $id );
+			if ( $translated ) {
+				$id = (int) $translated;
+			}
+		}
+		if ( ! $id || in_array( $id, $stack, true ) || 'publish' !== get_post_status( $id ) || ! class_exists( '\Elementor\Plugin' ) ) {
+			return '';
+		}
+
+		$stack[] = $id;
+		$html    = \Elementor\Plugin::$instance->frontend->get_builder_content_for_display( $id, true );
+		array_pop( $stack );
+		return (string) $html;
+	}
+
+	private function bar_indicator_svg( $type ) {
+		if ( 'caret' === $type ) {
+			return '<span class="lu3g-mb__indicator lu3g-mb__indicator--caret" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 9.5h12L12 16z" fill="currentColor"/></svg></span>';
+		}
+		if ( 'plus' === $type ) {
+			return '<span class="lu3g-mb__indicator lu3g-mb__indicator--plus" aria-hidden="true"></span>';
+		}
+		return '<span class="lu3g-mb__indicator lu3g-mb__indicator--chevron" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+	}
+
+	/** Indicatore scelto per le tendine ('' = nessuno). */
+	private function build_bar_indicator() {
+		$type = $this->pick( 'desktop_indicator', array( 'chevron', 'caret', 'plus', 'none' ), 'chevron' );
+		return 'none' === $type ? '' : $this->bar_indicator_svg( $type );
+	}
+
+	/** Voci extra "come le voci del menu": nella barra diventano voci della barra (stesso stile, stessi effetti). */
+	private function bar_extra_menu_items() {
+		$out = '';
+		foreach ( $this->extras_for( 'desktop' ) as $item ) {
+			if ( 'menu' !== $this->extra_group( $item ) ) {
+				continue;
+			}
+			$p = $this->extra_parts( $item );
+			if ( ! $p ) {
+				continue;
+			}
+			$atts          = $p['atts'];
+			$atts['class'] = 'lu3g-mb__link';
+			$out          .= '<li class="lu3g-mb__item lu3g-mb__item--level-0 lu3g-mb__item--extra' . ( $p['current'] ? ' is-current' : '' ) . '"><a' . $this->attrs( $atts ) . '>'
+				. ( $p['icon'] ? '<span class="lu3g-mb__link-icon" aria-hidden="true">' . $p['icon'] . '</span>' : '' )
+				. '<span class="lu3g-mb__text">' . esc_html( $p['text'] ) . '</span></a></li>';
+		}
+		return $out;
+	}
+
+	/** Altre voci extra nella barra: contatti e testi in linea, social in gruppo, pulsante CTA. */
+	private function render_bar_extras( $position ) {
+		$html   = '';
+		$social = '';
+		foreach ( $this->extras_for( 'desktop' ) as $item ) {
+			$group = $this->extra_group( $item );
+			if ( 'menu' === $group ) {
+				continue;
+			}
+			$p = $this->extra_parts( $item );
+			if ( ! $p ) {
+				continue;
+			}
+			$atts = $p['atts'];
+			if ( 'social' === $group ) {
+				$atts['class'] = 'lu3g-mb__social-link';
+				$social       .= '<li><a' . $this->attrs( $atts ) . '>' . $p['icon'] . '</a></li>';
+				continue;
+			}
+			if ( '' !== $social ) {
+				$html  .= '<ul class="lu3g-mb__social">' . $social . '</ul>';
+				$social = '';
+			}
+			$icon = $p['icon'] ? '<span class="{class}" aria-hidden="true">' . $p['icon'] . '</span>' : '';
+			if ( 'cta' === $group ) {
+				$atts['class'] = 'lu3g-mb__cta';
+				$html         .= '<a' . $this->attrs( $atts ) . '>' . str_replace( '{class}', 'lu3g-mb__cta-icon', $icon ) . '<span class="lu3g-mb__cta-text">' . esc_html( $p['text'] ) . '</span></a>';
+			} elseif ( 'text' === $p['type'] ) {
+				$html .= '<span class="lu3g-mb__contact lu3g-mb__contact--text">' . esc_html( $p['text'] ) . '</span>';
+			} else {
+				$atts['class'] = 'lu3g-mb__contact lu3g-mb__contact--' . $p['type'];
+				$html         .= '<a' . $this->attrs( $atts ) . '>' . str_replace( '{class}', 'lu3g-mb__contact-icon', $icon ) . '<span class="lu3g-mb__contact-text">' . esc_html( $p['text'] ) . '</span></a>';
+			}
+		}
+		if ( '' !== $social ) {
+			$html .= '<ul class="lu3g-mb__social">' . $social . '</ul>';
+		}
+		if ( '' !== $html ) {
+			echo '<div class="lu3g-mb__extras lu3g-mb__extras--' . esc_attr( $position ) . '">' . $html . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput -- HTML costruito ed escapato sopra
 		}
 	}
 

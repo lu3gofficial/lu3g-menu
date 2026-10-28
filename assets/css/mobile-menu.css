@@ -1,5 +1,5 @@
 /**
- * LU3G Mobile Menu — stili del widget.
+ * Menu LU3G — stili del widget (pannello mobile e barra desktop).
  *
  * I valori configurabili da Elementor arrivano come variabili CSS impostate sul contenitore del widget
  * (--lu3g-mm-dur, --lu3g-mm-ease, --lu3g-mm-bar-w, ...): qui si usano sempre con un valore di riserva,
@@ -1033,6 +1033,598 @@
 	text-decoration: none;
 }
 
+/* ======================================================================================= Barra desktop */
+
+.lu3g-mb {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	width: 100%;
+}
+
+.lu3g-mb ul.lu3g-mb__menu,
+.lu3g-mb ul.lu3g-mb__sub,
+.lu3g-mb ul.lu3g-mb__mega-cols,
+.lu3g-mb ul.lu3g-mb__col-links,
+.lu3g-mb ul.lu3g-mb__social {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.lu3g-mb li::before,
+.lu3g-mb li::marker {
+	content: none;
+}
+
+.lu3g-mb__menu {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+}
+
+.lu3g-mb__item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	margin: 0;
+	padding: 0;
+}
+
+.lu3g-mb .lu3g-mb__link,
+.lu3g-mb button.lu3g-mb__link:hover,
+.lu3g-mb button.lu3g-mb__link:focus {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	margin: 0;
+	padding: 10px 14px;
+	border: 0;
+	border-radius: 0;
+	background-color: transparent;
+	box-shadow: none;
+	color: inherit;
+	font-family: inherit;
+	font-size: 16px;
+	font-weight: 500;
+	line-height: 1.3;
+	text-align: left;
+	text-decoration: none;
+	text-transform: none;
+	letter-spacing: normal;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.lu3g-mb__link-icon {
+	display: inline-flex;
+}
+
+.lu3g-mb__link-icon svg,
+.lu3g-mb__contact-icon svg,
+.lu3g-mb__social-link svg,
+.lu3g-mb__cta-icon svg {
+	width: 1em;
+	height: 1em;
+	fill: currentColor;
+}
+
+/* pulsante della tendina accanto al link */
+.lu3g-mb .lu3g-mb__toggle,
+.lu3g-mb .lu3g-mb__toggle:hover,
+.lu3g-mb .lu3g-mb__toggle:focus {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin: 0 0 0 -8px;
+	padding: 6px 4px;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	color: inherit;
+	line-height: 1;
+	cursor: pointer;
+}
+
+/* indicatore "Nessuno": il pulsante resta per la tastiera, visibile solo quando ha il focus */
+.lu3g-mb .lu3g-mb__toggle--sr:not(:focus-visible) {
+	position: absolute !important;
+	width: 1px !important;
+	height: 1px !important;
+	margin: -1px !important;
+	padding: 0 !important;
+	overflow: hidden !important;
+	clip: rect(0 0 0 0) !important;
+	white-space: nowrap !important;
+}
+
+.lu3g-mb__indicator {
+	position: relative;
+	display: inline-flex;
+	flex: none;
+	width: 12px;
+	height: 12px;
+}
+
+.lu3g-mb__indicator svg {
+	width: 100%;
+	height: 100%;
+}
+
+.lu3g-mb__indicator--plus::before,
+.lu3g-mb__indicator--plus::after {
+	content: "";
+	position: absolute;
+	top: calc(50% - 1px);
+	left: 0;
+	width: 100%;
+	height: 2px;
+	background: currentColor;
+}
+
+.lu3g-mb__indicator--plus::after {
+	transform: rotate(90deg);
+}
+
+.lu3g-mb__item--level-0.is-open > .lu3g-mb__link .lu3g-mb__indicator,
+.lu3g-mb__item--level-0.is-open > .lu3g-mb__toggle .lu3g-mb__indicator {
+	transform: rotate(180deg);
+}
+
+.lu3g-mb .lu3g-mb__item--level-0.is-open > * > .lu3g-mb__indicator--plus {
+	transform: rotate(45deg);
+}
+
+/* nelle tendine le frecce puntano verso la tendina laterale */
+.lu3g-mb__sub .lu3g-mb__indicator {
+	transform: rotate(-90deg);
+}
+
+.lu3g-mb__sub .lu3g-mb__item.is-flip .lu3g-mb__indicator {
+	transform: rotate(90deg);
+}
+
+/* ------------------------------------------------------------------------------------------- Tendine */
+
+.lu3g-mb__dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	z-index: 9990;
+	box-sizing: border-box;
+	min-width: 220px;
+	margin-top: var(--lu3g-mb-offset, 0px);
+	padding: 8px 0;
+	border-radius: 8px;
+	background-color: #fff;
+	box-shadow: 0 14px 40px rgba(0, 0, 0, .14);
+	color: #1a1a1a;
+	text-align: left;
+	visibility: hidden;
+	opacity: 0;
+	pointer-events: none;
+}
+
+/* ponte invisibile sopra la tendina: il mouse attraversa la distanza dalla barra senza chiuderla */
+.lu3g-mb__dropdown::before {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: 100%;
+	left: 0;
+	height: var(--lu3g-mb-offset, 0px);
+}
+
+.lu3g-mb__item.is-open > .lu3g-mb__dropdown {
+	visibility: visible;
+	opacity: 1;
+	transform: none;
+	pointer-events: auto;
+}
+
+/* tendina che uscirebbe a destra dallo schermo: allineata al bordo destro della voce */
+.lu3g-mb__item--level-0.is-align-right > .lu3g-mb__dropdown {
+	right: 0;
+	left: auto;
+}
+
+/* livelli successivi: di lato */
+.lu3g-mb__dropdown .lu3g-mb__dropdown {
+	top: -8px;
+	left: 100%;
+	margin-top: 0;
+	margin-left: 4px;
+}
+
+.lu3g-mb__dropdown .lu3g-mb__dropdown::before {
+	top: 0;
+	right: 100%;
+	bottom: 0;
+	left: auto;
+	width: 4px;
+	height: auto;
+}
+
+.lu3g-mb__dropdown .lu3g-mb__item.is-flip > .lu3g-mb__dropdown {
+	right: 100%;
+	left: auto;
+	margin-right: 4px;
+	margin-left: 0;
+}
+
+.lu3g-mb__dropdown .lu3g-mb__item.is-flip > .lu3g-mb__dropdown::before {
+	right: auto;
+	left: 100%;
+}
+
+.lu3g-mb__sub > .lu3g-mb__item {
+	display: flex;
+	align-items: center;
+}
+
+.lu3g-mb .lu3g-mb__sub .lu3g-mb__link {
+	flex: 1 1 auto;
+	padding: 10px 20px;
+	font-size: 15px;
+	font-weight: 400;
+}
+
+.lu3g-mb .lu3g-mb__sub .lu3g-mb__toggle {
+	margin: 0 12px 0 0;
+}
+
+/* animazioni delle tendine: stato chiuso (aperto = transform none) */
+.lu3g-mb[data-drop="slide-up"] .lu3g-mb__dropdown {
+	transform: translateY(10px);
+}
+
+.lu3g-mb[data-drop="slide-down"] .lu3g-mb__dropdown {
+	transform: translateY(-10px);
+}
+
+.lu3g-mb[data-drop="zoom"] .lu3g-mb__dropdown {
+	transform: scale(.94);
+	transform-origin: top center;
+}
+
+.lu3g-mb[data-drop="flip"] .lu3g-mb__dropdown {
+	transform: perspective(900px) rotateX(-20deg);
+	transform-origin: top center;
+}
+
+/* --------------------------------------------------------------------------------------- Mega menu */
+
+/* larghezza e posizione le calcola il JS (contenitore, schermo o larghezza personalizzata) */
+.lu3g-mb__mega {
+	min-width: 0;
+	max-width: 100vw;
+}
+
+.lu3g-mb__mega--columns {
+	padding: 24px 28px;
+}
+
+.lu3g-mb__mega--template {
+	padding: 0;
+	overflow: hidden;
+}
+
+.lu3g-mb__mega-cols {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+	gap: 24px 32px;
+}
+
+.lu3g-mb__col {
+	min-width: 0;
+}
+
+.lu3g-mb .lu3g-mb__col-title {
+	display: block;
+	margin-bottom: 10px;
+	color: inherit;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 1.3;
+	text-decoration: none;
+}
+
+.lu3g-mb__col-links {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.lu3g-mb__col-links .lu3g-mb__col-links {
+	margin-top: 6px;
+	padding-left: 12px;
+}
+
+.lu3g-mb .lu3g-mb__col-link {
+	color: inherit;
+	font-size: 14px;
+	line-height: 1.4;
+	text-decoration: none;
+	opacity: .8;
+}
+
+.lu3g-mb .lu3g-mb__col-link:hover,
+.lu3g-mb .lu3g-mb__col-link:focus-visible,
+.lu3g-mb .lu3g-mb__col-link[aria-current="page"] {
+	opacity: 1;
+}
+
+/* ------------------------------------------------------------------------------ Voci extra nella barra */
+
+.lu3g-mb__extras {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 16px;
+}
+
+.lu3g-mb__extras--after {
+	margin-left: 16px;
+}
+
+.lu3g-mb__extras--before {
+	margin-right: 16px;
+}
+
+.lu3g-mb .lu3g-mb__contact {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	color: inherit;
+	font-size: 15px;
+	line-height: 1.3;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.lu3g-mb__contact-icon {
+	display: inline-flex;
+	font-size: 16px;
+}
+
+.lu3g-mb__social {
+	display: flex;
+	gap: 8px;
+}
+
+.lu3g-mb .lu3g-mb__social-link {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 36px;
+	height: 36px;
+	border-radius: 50%;
+	background-color: rgba(0, 0, 0, .06);
+	color: inherit;
+	font-size: 16px;
+	text-decoration: none;
+}
+
+.lu3g-mb .lu3g-mb__cta {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	box-sizing: border-box;
+	padding: 10px 22px;
+	border: 0 solid transparent;
+	border-radius: 6px;
+	background-color: #1a1a1a;
+	color: #fff;
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 1.2;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+/* focus: come nel pannello, contorno solo da tastiera */
+.lu3g-mb :focus:not(:focus-visible) {
+	outline: none !important;
+	box-shadow: none;
+}
+
+.lu3g-mb :focus-visible {
+	outline: 2px solid var(--lu3g-mm-focus, currentColor) !important;
+	outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------------- Effetto al passaggio */
+
+/* le linee e le cornici sono pseudo-elementi del link; lo stato "attivo" vale per hover, tendina aperta,
+   pagina corrente (e genitori, se scelto) e focus da tastiera */
+.lu3g-mb .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link {
+	position: relative;
+	isolation: isolate;
+}
+
+.lu3g-mb[data-pointer="underline"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="overline"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	content: "";
+	position: absolute;
+	right: 0;
+	left: 0;
+	height: var(--lu3g-mb-ph, 2px);
+	border-radius: var(--lu3g-mb-ph, 2px);
+	background: var(--lu3g-mb-pc, currentColor);
+	opacity: 0;
+	pointer-events: none;
+}
+
+.lu3g-mb[data-pointer="underline"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after {
+	bottom: 0;
+}
+
+.lu3g-mb[data-pointer="overline"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	top: 0;
+}
+
+.lu3g-mb[data-pointer="underline"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="overline"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after {
+	transform: scaleX(0);
+}
+
+.lu3g-mb[data-pointer="underline"][data-pointer-anim="slide"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="overline"][data-pointer-anim="slide"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"][data-pointer-anim="slide"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"][data-pointer-anim="slide"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after {
+	transform: scaleX(0);
+	transform-origin: left center;
+}
+
+.lu3g-mb[data-pointer="underline"][data-pointer-anim="drop"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="overline"][data-pointer-anim="drop"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"][data-pointer-anim="drop"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"][data-pointer-anim="drop"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after {
+	transform: translateY(-6px);
+}
+
+.lu3g-mb[data-pointer="underline"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="underline"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="underline"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="underline"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="underline"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible::after,
+.lu3g-mb[data-pointer="overline"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="overline"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="overline"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="overline"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="overline"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible::before,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible::before,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="double"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link::after,
+.lu3g-mb[data-pointer="double"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible::after {
+	opacity: 1;
+	transform: none;
+}
+
+.lu3g-mb[data-pointer="framed"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border: var(--lu3g-mb-ph, 2px) solid var(--lu3g-mb-pc, currentColor);
+	border-radius: var(--lu3g-mb-pr, 0);
+	opacity: 0;
+	pointer-events: none;
+}
+
+.lu3g-mb[data-pointer="framed"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	transform: scale(.85);
+}
+
+.lu3g-mb[data-pointer="framed"][data-pointer-anim="shrink"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	transform: scale(1.15);
+}
+
+.lu3g-mb[data-pointer="framed"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="framed"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="framed"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="framed"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="framed"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible::before {
+	opacity: 1;
+	transform: none;
+}
+
+.lu3g-mb[data-pointer="background"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: var(--lu3g-mb-pr, 4px);
+	background: var(--lu3g-mb-pbg, rgba(0, 0, 0, .07));
+	opacity: 0;
+	pointer-events: none;
+}
+
+.lu3g-mb[data-pointer="background"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	transform: scale(.7);
+}
+
+.lu3g-mb[data-pointer="background"][data-pointer-anim="sweep"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	transform: scaleX(0);
+	transform-origin: left center;
+}
+
+.lu3g-mb[data-pointer="background"][data-pointer-anim="rise"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	transform: scaleY(0);
+	transform-origin: center bottom;
+}
+
+.lu3g-mb[data-pointer="background"][data-pointer-anim="shutter"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before {
+	transform: scaleX(0);
+}
+
+.lu3g-mb[data-pointer="background"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="background"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="background"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="background"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link::before,
+.lu3g-mb[data-pointer="background"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible::before {
+	opacity: 1;
+	transform: none;
+}
+
+.lu3g-mb[data-pointer="text"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link .lu3g-mb__text {
+	display: inline-block;
+}
+
+.lu3g-mb[data-pointer="text"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="grow"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="grow"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible .lu3g-mb__text {
+	transform: scale(1.08);
+}
+
+.lu3g-mb[data-pointer="text"][data-pointer-anim="float"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="float"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="float"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="float"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="float"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible .lu3g-mb__text {
+	transform: translateY(-3px);
+}
+
+.lu3g-mb[data-pointer="text"][data-pointer-anim="sink"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="sink"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="sink"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="sink"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="sink"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible .lu3g-mb__text {
+	transform: translateY(3px);
+}
+
+.lu3g-mb[data-pointer="text"][data-pointer-anim="skew"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="skew"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="skew"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="skew"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="skew"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible .lu3g-mb__text {
+	transform: skewX(-8deg);
+}
+
+.lu3g-mb[data-pointer="text"][data-pointer-anim="rotate"] .lu3g-mb__menu > .lu3g-mb__item:hover > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="rotate"] .lu3g-mb__menu > .lu3g-mb__item.is-open > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="rotate"] .lu3g-mb__menu > .lu3g-mb__item.is-current > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="rotate"].lu3g-mb--hl-anc .lu3g-mb__menu > .lu3g-mb__item.is-current-ancestor > .lu3g-mb__link .lu3g-mb__text,
+.lu3g-mb[data-pointer="text"][data-pointer-anim="rotate"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link:focus-visible .lu3g-mb__text {
+	transform: rotate(-4deg);
+}
+
 /* ============================================================================================= Focus */
 
 /* molti temi mettono un contorno (spesso blu) su :focus, che resta dopo un tocco o un click:
@@ -1256,5 +1848,46 @@ html.lu3g-mm-locked body {
 	/* dopo il primo passaggio tra le schermate a slide le voci si muovono subito, senza il ritardo dell'ingresso */
 	.lu3g-mm__layer.lu3g-mm__layer--nav .lu3g-mm__anim {
 		transition-delay: 0s !important;
+	}
+}
+
+/* ============================================================================ Animazioni barra desktop */
+
+@media (prefers-reduced-motion: no-preference) {
+
+	.lu3g-mb[data-drop]:not([data-drop="none"]) .lu3g-mb__dropdown {
+		transition:
+			opacity var(--lu3g-mb-dur, 250ms) ease,
+			transform var(--lu3g-mb-dur, 250ms) cubic-bezier(.2, .8, .2, 1),
+			visibility 0s linear var(--lu3g-mb-dur, 250ms);
+	}
+
+	.lu3g-mb[data-drop]:not([data-drop="none"]) .lu3g-mb__item.is-open > .lu3g-mb__dropdown {
+		transition:
+			opacity var(--lu3g-mb-dur, 250ms) ease,
+			transform var(--lu3g-mb-dur, 250ms) cubic-bezier(.2, .8, .2, 1),
+			visibility 0s linear 0s;
+	}
+
+	.lu3g-mb__link,
+	.lu3g-mb__toggle,
+	.lu3g-mb__social-link,
+	.lu3g-mb__cta,
+	.lu3g-mb__contact,
+	.lu3g-mb__col-title,
+	.lu3g-mb__col-link {
+		transition: color .2s ease, background-color .2s ease, border-color .2s ease, opacity .2s ease;
+	}
+
+	.lu3g-mb__indicator {
+		transition: transform var(--lu3g-mb-dur, 250ms) ease;
+	}
+
+	.lu3g-mb[data-pointer] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::before,
+	.lu3g-mb[data-pointer] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link::after,
+	.lu3g-mb[data-pointer="text"] .lu3g-mb__menu > .lu3g-mb__item > .lu3g-mb__link .lu3g-mb__text {
+		transition:
+			opacity var(--lu3g-mb-pd, 300ms) ease,
+			transform var(--lu3g-mb-pd, 300ms) cubic-bezier(.2, .8, .2, 1);
 	}
 }

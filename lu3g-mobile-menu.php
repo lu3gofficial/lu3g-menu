@@ -1,10 +1,10 @@
 <?php
 /**
- * Plugin Name:       LU3G Mobile Menu
- * Description:       Widget Elementor con menu hamburger per mobile: voci dal menu di WordPress con sottomenu su più livelli, voci extra (link, contatti, social, CTA), animazioni configurabili, accessibile, compatibile con WPML e Polylang.
- * Version:           1.1.0
- * Plugin URI:        https://github.com/lu3gofficial/lu3g-mobile-menu
- * Update URI:        https://github.com/lu3gofficial/lu3g-mobile-menu
+ * Plugin Name:       Menu LU3G
+ * Description:       Widget Elementor per il menu del sito: hamburger su mobile, barra orizzontale con tendine e mega menu su desktop. Voci dal menu di WordPress, voci extra (link, contatti, social, CTA), animazioni configurabili, accessibile, compatibile con WPML e Polylang.
+ * Version:           1.2.0
+ * Plugin URI:        https://github.com/lu3gofficial/lu3g-menu
+ * Update URI:        https://github.com/lu3gofficial/lu3g-menu
  * Author:            LU3G Agenzia Web
  * Text Domain:       lu3g-mobile-menu
  * Requires PHP:      7.4
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LU3G_MM_VERSION', '1.1.0' );
+define( 'LU3G_MM_VERSION', '1.2.0' );
 define( 'LU3G_MM_FILE', __FILE__ );
 define( 'LU3G_MM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LU3G_MM_URL', plugin_dir_url( __FILE__ ) );
@@ -49,6 +49,12 @@ final class LU3G_Mobile_Menu {
 		add_action( 'wp_enqueue_scripts', array( __CLASS__, 'register_assets' ) );
 		add_action( 'elementor/elements/categories_registered', array( __CLASS__, 'register_category' ) );
 		add_action( 'elementor/widgets/register', array( __CLASS__, 'register_widget' ) );
+
+		// mega menu: campi sulle voci in Aspetto → Menu (la lettura serve anche sul sito)
+		require_once LU3G_MM_PATH . 'includes/class-mega.php';
+		if ( is_admin() ) {
+			LU3G_Mobile_Menu_Mega::init();
+		}
 
 		// WPML: testi del widget e voci extra traducibili con il Translation Editor
 		require_once LU3G_MM_PATH . 'includes/class-wpml.php';
@@ -123,19 +129,19 @@ final class LU3G_Mobile_Menu {
 	}
 
 	public static function notice_missing() {
-		echo '<div class="notice notice-warning"><p><strong>LU3G Mobile Menu</strong> ' . esc_html__( 'richiede Elementor attivo.', 'lu3g-mobile-menu' ) . '</p></div>';
+		echo '<div class="notice notice-warning"><p><strong>Menu LU3G</strong> ' . esc_html__( 'richiede Elementor attivo.', 'lu3g-mobile-menu' ) . '</p></div>';
 	}
 
 	public static function notice_version() {
 		/* translators: %s: versione minima di Elementor */
-		echo '<div class="notice notice-warning"><p><strong>LU3G Mobile Menu</strong> ' . esc_html( sprintf( __( 'richiede Elementor %s o successivo.', 'lu3g-mobile-menu' ), self::MIN_ELEMENTOR ) ) . '</p></div>';
+		echo '<div class="notice notice-warning"><p><strong>Menu LU3G</strong> ' . esc_html( sprintf( __( 'richiede Elementor %s o successivo.', 'lu3g-mobile-menu' ), self::MIN_ELEMENTOR ) ) . '</p></div>';
 	}
 }
 
 LU3G_Mobile_Menu::init();
 
 /**
- * Aggiornamenti automatici dalle release GitHub di https://github.com/lu3gofficial/lu3g-mobile-menu (vedi includes/class-updater.php).
+ * Aggiornamenti automatici dalle release GitHub di https://github.com/lu3gofficial/lu3g-menu (vedi includes/class-updater.php).
  * Fuori da ogni controllo su Elementor: il plugin si aggiorna anche dove Elementor è disattivato.
  */
 require_once __DIR__ . '/includes/class-updater.php';

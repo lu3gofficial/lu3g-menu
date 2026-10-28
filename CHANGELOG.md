@@ -1,5 +1,20 @@
 # Registro delle modifiche
 
+## 1.2.0
+- Nuovo nome visibile: "Menu LU3G" (plugin e widget). Repository rinominato in lu3gofficial/lu3g-menu; cartella del
+  plugin e nome interno del widget invariati, quindi aggiornamento normale e widget già inseriti ancora validi.
+- Versione desktop (Contenuto → Desktop → Su desktop): "Nascosto" (predefinito, come prima), "Barra orizzontale con
+  tendine" o "Hamburger anche su desktop"; sotto il breakpoint resta l'hamburger.
+- Barra: tendine su più livelli al passaggio del mouse (con ritardo di chiusura) o al click, primo tocco che apre
+  la tendina sui touch, ESC, tastiera, tendine laterali che non escono dallo schermo; 6 animazioni delle tendine;
+  indicatore freccia, triangolo, più o nessuno.
+- Effetti al passaggio sulle voci (anche per la pagina corrente): linea sotto, sopra, doppia, cornice, sfondo, testo,
+  ognuno con le sue animazioni.
+- Voci extra nella barra (CTA, contatti, social, link) con "Mostra in": pannello e barra, solo pannello, solo barra.
+- Mega menu, voce per voce in Aspetto → Menu: colonne dalle sotto-voci oppure un template Elementor salvato
+  (tradotto con WPML/Polylang); largo come il contenitore della barra, come lo schermo o a larghezza scelta.
+- Nuove sezioni di stile: Barra desktop, Tendine desktop, Mega menu, Voci extra nella barra.
+
 ## 1.1.0
 - Apertura del pannello, 7 nuove: slide dal basso (bottom sheet, angoli arrotondati), rotazione 3D di lato,
   riquadro dall'angolo (staccato dai bordi), zoom a schermo intero, cerchio che si allarga dall'icona hamburger,

@@ -1,5 +1,5 @@
 /**
- * LU3G Mobile Menu — comportamento del widget (JavaScript vanilla, nessuna dipendenza).
+ * Menu LU3G — comportamento del widget (JavaScript vanilla, nessuna dipendenza).
  *
  * - apre e chiude il pannello (hamburger, pulsante chiudi, overlay, ESC, click su un link);
  * - sposta overlay e pannello in fondo al <body>, così un'intestazione con transform o filtri non ne blocca
@@ -7,7 +7,10 @@
  * - blocca lo scroll della pagina, intrappola il focus nel pannello e lo restituisce all'hamburger alla chiusura;
  * - apre e chiude i sottomenu (aria-expanded): a espansione, con l'opzione "un sottomenu aperto alla volta",
  *   oppure a slide, dove ogni sottomenu entra da destra come una nuova schermata con il pulsante Indietro;
- * - frecce su/giù, Home e Fine per spostarsi tra le voci; nei sottomenu a slide freccia destra entra, sinistra torna indietro.
+ * - frecce su/giù, Home e Fine per spostarsi tra le voci; nei sottomenu a slide freccia destra entra, sinistra torna indietro;
+ * - barra desktop (.lu3g-mb): tendine al passaggio del mouse o al click, primo tocco che apre la tendina sui touch,
+ *   ESC e uscita del focus che chiudono, tendine laterali che non escono dallo schermo, mega menu largo quanto
+ *   il contenitore, lo schermo o la larghezza scelta.
  * Le opzioni arrivano dal PHP nell'attributo data-lu3g-mm.
  */
 ( function () {
@@ -555,6 +558,224 @@
 		}
 	} );
 
+	/* ----------------------------------------------------------------------------------- barra desktop */
+
+	function MenuBar( nav ) {
+		var opts = {};
+		try {
+			opts = JSON.parse( nav.getAttribute( 'data-lu3g-mb' ) || '{}' );
+		} catch ( e ) {}
+
+		this.nav = nav;
+		this.opts = opts;
+		this.hover = opts.trigger !== 'click';
+		this.delay = typeof opts.delay === 'number' ? opts.delay : 250;
+		this.pointer = 'mouse'; // ultimo tipo di puntatore usato nella barra (mouse, touch, pen)
+		this.bind();
+	}
+
+	function children( el, cls ) {
+		return Array.prototype.filter.call( el.children, function ( c ) {
+			return c.classList.contains( cls );
+		} );
+	}
+
+	MenuBar.prototype.toggleOf = function ( li ) {
+		var t = Array.prototype.filter.call( li.children, function ( c ) {
+			return c.hasAttribute( 'data-mb-toggle' );
+		} );
+		return t[ 0 ] || null;
+	};
+
+	MenuBar.prototype.bind = function () {
+		var self = this;
+		var nav = this.nav;
+
+		nav.addEventListener( 'pointerdown', function ( e ) {
+			self.pointer = e.pointerType || 'mouse';
+		}, true );
+
+		// apertura al passaggio del mouse (solo mouse: sui touch decide il tocco)
+		if ( this.hover ) {
+			Array.prototype.forEach.call( nav.querySelectorAll( '.lu3g-mb__item--has-drop' ), function ( li ) {
+				li.addEventListener( 'pointerenter', function ( e ) {
+					if ( e.pointerType !== 'mouse' ) {
+						return;
+					}
+					window.clearTimeout( li.lu3gTimer );
+					self.open( li );
+				} );
+				li.addEventListener( 'pointerleave', function ( e ) {
+					if ( e.pointerType !== 'mouse' ) {
+						return;
+					}
+					li.lu3gTimer = window.setTimeout( function () {
+						self.close( li );
+					}, self.delay );
+				} );
+			} );
+		}
+
+		nav.addEventListener( 'click', function ( e ) {
+			var toggle = e.target.closest( '[data-mb-toggle]' );
+			if ( toggle && nav.contains( toggle ) ) {
+				e.preventDefault();
+				self.toggle( toggle.closest( '.lu3g-mb__item' ) );
+				return;
+			}
+			// touch con apertura "al passaggio": il primo tocco su una voce con tendina la apre, il secondo segue il link
+			var link = e.target.closest( 'a.lu3g-mb__link' );
+			if ( link && self.hover && self.pointer !== 'mouse' ) {
+				var li = link.parentNode;
+				if ( li.classList.contains( 'lu3g-mb__item--has-drop' ) && ! li.classList.contains( 'is-open' ) ) {
+					e.preventDefault();
+					self.open( li );
+				}
+			}
+		} );
+
+		// click fuori dalla barra: tutto chiuso
+		document.addEventListener( 'click', function ( e ) {
+			if ( ! nav.contains( e.target ) ) {
+				self.closeAll();
+			}
+		} );
+
+		nav.addEventListener( 'keydown', function ( e ) {
+			if ( e.key !== 'Escape' && e.key !== 'Esc' ) {
+				return;
+			}
+			var li = e.target.closest( '.lu3g-mb__item.is-open' ) || nav.querySelector( '.lu3g-mb__item.is-open' );
+			if ( ! li ) {
+				return;
+			}
+			// si chiude la tendina più interna aperta e il focus torna al suo pulsante
+			var inner = li.querySelectorAll( '.lu3g-mb__item.is-open' );
+			if ( inner.length ) {
+				li = inner[ inner.length - 1 ];
+			}
+			e.preventDefault();
+			self.close( li );
+			var t = self.toggleOf( li );
+			if ( t ) {
+				t.focus();
+			}
+		} );
+
+		// con la tastiera: uscendo con Tab da una voce aperta, la sua tendina si chiude
+		nav.addEventListener( 'focusout', function ( e ) {
+			var to = e.relatedTarget;
+			if ( ! to ) {
+				return; // click su un'area vuota: ci pensa il click fuori
+			}
+			Array.prototype.forEach.call( nav.querySelectorAll( '.lu3g-mb__item.is-open' ), function ( li ) {
+				if ( ! li.contains( to ) ) {
+					self.close( li );
+				}
+			} );
+		} );
+
+		window.addEventListener( 'resize', function () {
+			Array.prototype.forEach.call( nav.querySelectorAll( '.lu3g-mb__item.is-open' ), function ( li ) {
+				self.place( li );
+			} );
+		} );
+	};
+
+	MenuBar.prototype.setExpanded = function ( li, open ) {
+		var t = this.toggleOf( li );
+		if ( t ) {
+			t.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+		}
+	};
+
+	MenuBar.prototype.open = function ( li ) {
+		var self = this;
+		Array.prototype.forEach.call( li.parentNode.children, function ( sibling ) {
+			if ( sibling !== li && sibling.classList.contains( 'is-open' ) ) {
+				self.close( sibling );
+			}
+		} );
+		window.clearTimeout( li.lu3gTimer );
+		this.place( li );
+		li.classList.add( 'is-open' );
+		this.setExpanded( li, true );
+	};
+
+	MenuBar.prototype.close = function ( li ) {
+		var self = this;
+		window.clearTimeout( li.lu3gTimer );
+		li.classList.remove( 'is-open' );
+		this.setExpanded( li, false );
+		Array.prototype.forEach.call( li.querySelectorAll( '.lu3g-mb__item.is-open' ), function ( inner ) {
+			inner.classList.remove( 'is-open' );
+			self.setExpanded( inner, false );
+		} );
+	};
+
+	MenuBar.prototype.toggle = function ( li ) {
+		if ( li.classList.contains( 'is-open' ) ) {
+			this.close( li );
+		} else {
+			this.open( li );
+		}
+	};
+
+	MenuBar.prototype.closeAll = function () {
+		var self = this;
+		Array.prototype.forEach.call( this.nav.querySelectorAll( '.lu3g-mb__menu > .lu3g-mb__item.is-open' ), function ( li ) {
+			self.close( li );
+		} );
+	};
+
+	/** Riferimento per la larghezza del mega menu "come il contenitore": il contenitore Elementor della barra. */
+	MenuBar.prototype.container = function () {
+		var n = this.nav;
+		return n.closest( '.e-con-inner' ) || n.closest( '.e-con' ) || n.closest( '.elementor-container' ) || n.closest( '.elementor-section' ) || document.documentElement;
+	};
+
+	/** Posizione della tendina prima di aprirla: mega menu (larghezza e allineamento) o tendine che non escano dallo schermo. */
+	MenuBar.prototype.place = function ( li ) {
+		var drop = children( li, 'lu3g-mb__dropdown' )[ 0 ];
+		if ( ! drop ) {
+			return;
+		}
+		var vw = document.documentElement.clientWidth;
+		var r = li.getBoundingClientRect();
+
+		if ( drop.classList.contains( 'lu3g-mb__mega' ) ) {
+			var left;
+			var width;
+			if ( this.opts.mega === 'custom' ) {
+				drop.style.width = '';
+				width = Math.min( drop.offsetWidth, vw - 16 );
+				left = Math.max( 8, Math.min( r.left + r.width / 2 - width / 2, vw - width - 8 ) );
+			} else if ( this.opts.mega === 'full' ) {
+				width = vw;
+				left = 0;
+			} else {
+				var c = this.container().getBoundingClientRect();
+				width = c.width;
+				left = c.left;
+			}
+			drop.style.width = width + 'px';
+			drop.style.left = ( left - r.left ) + 'px';
+			return;
+		}
+
+		if ( li.classList.contains( 'lu3g-mb__item--level-0' ) ) {
+			li.classList.remove( 'is-align-right' );
+			if ( r.left + drop.offsetWidth > vw - 8 ) {
+				li.classList.add( 'is-align-right' );
+			}
+		} else {
+			li.classList.remove( 'is-flip' );
+			if ( r.right + drop.offsetWidth + 8 > vw ) {
+				li.classList.add( 'is-flip' );
+			}
+		}
+	};
+
 	/* -------------------------------------------------------------------------------------------- avvio */
 
 	function init( scope ) {
@@ -563,6 +784,12 @@
 		Array.prototype.forEach.call( nodes, function ( node ) {
 			if ( ! node.lu3gMobileMenu ) {
 				node.lu3gMobileMenu = new MobileMenu( node );
+			}
+		} );
+		var bars = base.matches && base.matches( '.lu3g-mb' ) ? [ base ] : base.querySelectorAll( '.lu3g-mb' );
+		Array.prototype.forEach.call( bars, function ( node ) {
+			if ( ! node.lu3gMenuBar ) {
+				node.lu3gMenuBar = new MenuBar( node );
 			}
 		} );
 	}

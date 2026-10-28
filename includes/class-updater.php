@@ -1,6 +1,6 @@
 <?php
 /**
- * Aggiornamenti del plugin da GitHub (repository pubblico lu3gofficial/lu3g-mobile-menu).
+ * Aggiornamenti del plugin da GitHub (repository pubblico lu3gofficial/lu3g-menu, fino alla 1.1.0 lu3g-mobile-menu).
  *
  * Come funziona:
  * - l'intestazione "Update URI: https://github.com/..." del plugin dice a WordPress di non cercarlo su wordpress.org
@@ -14,7 +14,7 @@
  * - senza token il pacchetto è il link pubblico di download dell'allegato (github.com/.../releases/download/...),
  *   che WordPress scarica da solo senza passare da questo file;
  * - con il token il pacchetto è l'indirizzo API dell'allegato, riconosciuto qualunque sia il proprietario
- *   (repos/<chiunque>/lu3g-mobile-menu/... oppure repositories/<numero>/...).
+ *   (repos/<chiunque>/lu3g-menu/... oppure repositories/<numero>/...).
  *
  * Il repository è pubblico: non serve nessuna configurazione. Facoltativo: un token GitHub in wp-config.php
  *   define( 'LU3G_GITHUB_TOKEN', 'github_pat_...' );
@@ -28,7 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 final class LU3G_Mobile_Menu_Updater {
 
-	const REPO      = 'lu3gofficial/lu3g-mobile-menu';   // proprietario/nome del repository su GitHub (se cambia, GitHub rinvia)
+	const REPO      = 'lu3gofficial/lu3g-menu';   // proprietario/nome del repository su GitHub (se cambia, GitHub rinvia)
 	const ASSET     = 'lu3g-mobile-menu.zip';
 	const SLUG      = 'lu3g-mobile-menu';
 	const TRANSIENT = 'lu3g_mobile_menu_release';
