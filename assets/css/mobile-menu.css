@@ -347,7 +347,8 @@
 	opacity: var(--lu3g-mm-ov-op, .5);
 }
 
-/* Il contenitore che il JS crea in fondo al <body> porta le classi del widget (per gli stili di Elementor):
+/* Il contenitore che il JS crea in fondo al <body> porta le classi del widget (per gli stili di Elementor;
+   la classe "elementor" no, altrimenti Elementor lo scambia per un documento):
    qui si annulla tutto ciò che potrebbe spostarlo o rompere il position: fixed del pannello */
 .lu3g-mm-portal,
 .lu3g-mm-portal > .elementor-element {

@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Menu LU3G
  * Description:       Widget Elementor per il menu del sito: hamburger su mobile, barra orizzontale con tendine e mega menu su desktop. Voci dal menu di WordPress, voci extra (link, contatti, social, CTA), animazioni configurabili, accessibile, compatibile con WPML e Polylang.
- * Version:           1.2.0
+ * Version:           1.2.1
  * Plugin URI:        https://github.com/lu3gofficial/lu3g-menu
  * Update URI:        https://github.com/lu3gofficial/lu3g-menu
  * Author:            LU3G Agenzia Web
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LU3G_MM_VERSION', '1.2.0' );
+define( 'LU3G_MM_VERSION', '1.2.1' );
 define( 'LU3G_MM_FILE', __FILE__ );
 define( 'LU3G_MM_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LU3G_MM_URL', plugin_dir_url( __FILE__ ) );

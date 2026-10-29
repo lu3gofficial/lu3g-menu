@@ -85,7 +85,10 @@
 			old.parentNode.removeChild( old );
 		} );
 
-		outer.className = 'lu3g-mm-portal' + ( doc ? ' elementor elementor-' + doc.getAttribute( 'data-elementor-id' ) : '' );
+		// solo "elementor-<id>", che basta agli stili del widget (.elementor-<id> .elementor-element-<id> ...).
+		// MAI la classe "elementor": per Elementor ogni .elementor è un documento con data-elementor-id e,
+		// nell'editor, Elementor Pro si blocca su un documento senza id ("`id` and `element` are required").
+		outer.className = 'lu3g-mm-portal' + ( doc ? ' elementor-' + doc.getAttribute( 'data-elementor-id' ) : '' );
 		outer.setAttribute( 'data-id', id );
 		inner.className = 'elementor-element elementor-element-' + id;
 		inner.appendChild( this.layer );

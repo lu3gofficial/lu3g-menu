@@ -1,5 +1,11 @@
 # Registro delle modifiche
 
+## 1.2.1
+- Corretto: con Elementor Pro l'editor restava fermo su "Caricamento" in tutte le pagine e i template quando il widget
+  era nell'header (Theme Builder). Il contenitore del pannello mobile creato dal JavaScript aveva la classe "elementor":
+  Elementor lo contava come documento senza id ed Elementor Pro si interrompeva ("`id` and `element` are required").
+  Ora ha solo la classe "elementor-<id>", che basta agli stili del widget.
+
 ## 1.2.0
 - Nuovo nome visibile: "Menu LU3G" (plugin e widget). Repository rinominato in lu3gofficial/lu3g-menu; cartella del
   plugin e nome interno del widget invariati, quindi aggiornamento normale e widget già inseriti ancora validi.
