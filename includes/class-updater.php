@@ -1,6 +1,9 @@
 <?php
 /**
- * Aggiornamenti del plugin da GitHub (repository pubblico lu3gofficial/lu3g-menu, fino alla 1.1.0 lu3g-mobile-menu).
+ * FILE GENERATO da lu3g-updater 1.0.0 (github.com/lu3gofficial/lu3g-updater): non modificarlo a mano.
+ * Per cambiarlo si modifica il modello in lu3g-updater e si rigenera con bin/sync.sh (vedi il README di lu3g-updater).
+ *
+ * Aggiornamenti del plugin da GitHub (repository pubblico lu3gofficial/lu3g-menu).
  *
  * Come funziona:
  * - l'intestazione "Update URI: https://github.com/..." del plugin dice a WordPress di non cercarlo su wordpress.org

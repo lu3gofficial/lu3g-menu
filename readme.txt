@@ -4,7 +4,7 @@ Tags: elementor, menu, mobile, hamburger, off-canvas
 Requires at least: 6.0
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.2.1
+Stable tag: 1.2.2
 License: GPLv2 or later
 
 Widget Elementor per il menu del sito: hamburger su mobile, barra con tendine e mega menu su desktop.
@@ -28,6 +28,10 @@ Widget Elementor per il menu del sito: hamburger su mobile, barra con tendine e 
 3. Per la barra desktop: Contenuto → Desktop → Su desktop → Barra orizzontale. Mega menu: Aspetto → Menu, riquadro "Mega menu LU3G" sulle voci di primo livello.
 
 == Changelog ==
+
+= 1.2.2 =
+* Aggiornamenti dal modello comune lu3g-updater; release avviabile anche da Actions → Run workflow.
+
 = 1.2.1 =
 * Corretto: con Elementor Pro l'editor restava su "Caricamento" in tutte le pagine e i template quando il widget era nell'header.
 = 1.2.0 =

@@ -1,5 +1,9 @@
 # Registro delle modifiche
 
+## 1.2.2
+- `includes/class-updater.php` ora è generato dal modello comune di [lu3g-updater](https://github.com/lu3gofficial/lu3g-updater) (1.0.0), a partire dal nuovo file `.lu3g-updater`. Il codice dell'updater è lo stesso di prima: cambia solo il commento in cima.
+- Release avviabile anche da GitHub, senza computer: *Actions → Release → Run workflow* sul branch `main`. Il tag lo crea l'automazione dalla `Version` del plugin, e si ferma se quella versione è già pubblicata.
+
 ## 1.2.1
 - Corretto: con Elementor Pro l'editor restava fermo su "Caricamento" in tutte le pagine e i template quando il widget
   era nell'header (Theme Builder). Il contenitore del pannello mobile creato dal JavaScript aveva la classe "elementor":
